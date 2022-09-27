@@ -1,5 +1,7 @@
 CREATE DATABASE AEROPORTO;
 
+DROP DATABASE AEROPORTO;
+
 USE AEROPORTO;
 
 CREATE TABLE CompanhiaAerea(
@@ -10,7 +12,7 @@ CREATE TABLE CompanhiaAerea(
 	DataCadastro DATE NOT NULL, 
 	Situacao VARCHAR(10));
 
-CREATE TABLE Aeronavo(
+CREATE TABLE Aeronave(
 	INSCRICAO VARCHAR(5) CONSTRAINT PK_Aeronave PRIMARY KEY,
 	Capacidade INT NOT NULL,
 	UltimaVenda DATE NOT NULL,
@@ -19,7 +21,7 @@ CREATE TABLE Aeronavo(
 
 CREATE TABLE CompanhiaPossueAeronave(
 	CNPJ VARCHAR(14) CONSTRAINT FK_CompanhiaAerea FOREIGN KEY REFERENCES CompanhiaAerea(CNPJ),
-	INSCRICAO VARCHAR(5) CONSTRAINT FK_Aeronave FOREIGN KEY REFERENCES Aeronavo(INSCRICAO),
+	INSCRICAO VARCHAR(5) CONSTRAINT FK_Aeronave FOREIGN KEY REFERENCES Aeronave(INSCRICAO),
 	PRIMARY KEY(CNPJ, INSCRICAO));
 
 CREATE TABLE Voo(
@@ -65,3 +67,23 @@ CREATE TABLE Passageiro(
 CREATE TABLE Restricao(
 	CNPJ VARCHAR(14) UNIQUE,
 	CPF VARCHAR(11) UNIQUE);
+
+SELECT * FROM CompanhiaAerea;
+
+SELECT companhiaaerea.RazaoSocial, companhiaaerea.CNPJ,
+	companhiaaerea.DataAbertura, companhiaaerea.UltimoVoo,
+	companhiaaerea.DataCadastro, companhiaaerea.Situacao FROM CompanhiaAerea;
+
+SELECT * FROM CompanhiaAerea;
+
+SELECT * FROM Aeronave;
+
+DELETE FROM Aeronave WHERE INSCRICAO = 'BBB';
+
+SELECT * FROM CompanhiaPossueAeronave;
+
+SELECT companhiaaerea.RazaoSocial, companhiaaerea.CNPJ, aeronave.INSCRICAO,
+	aeronave.Capacidade, aeronave.UltimaVenda, aeronave.DataCadastro, aeronave.Situacao
+	FROM Aeronave JOIN CompanhiaPossueAeronave ON 
+	companhiapossueaeronave.INSCRICAO = aeronave.INSCRICAO
+	JOIN CompanhiaAerea ON companhiapossueaeronave.CNPJ = companhiaaerea.CNPJ
