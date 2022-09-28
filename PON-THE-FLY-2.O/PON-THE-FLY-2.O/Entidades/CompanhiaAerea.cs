@@ -5,7 +5,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using POnTheFly;
 
 namespace PON_THE_FLY_2.O.Entidades
 {
@@ -29,6 +28,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             bool condicaoDeSaida, validacao;
             string cnpj, razaoSocial, sql;
+            int contador;
             DateTime dataAbertura = new DateTime();
 
 
@@ -90,7 +90,15 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"INSERT CompanhiaAerea VALUES('{cnpj}', '{razaoSocial}', '{dataAbertura}', '{DateTime.Now.ToShortDateString()}', '{DateTime.Now.ToShortDateString()}', 'ATIVA')";
 
-            caminho.InsertDados(sql, conexao);
+            contador = caminho.InsertDados(sql, conexao);
+
+            if (contador > 0)
+            {
+                Console.WriteLine("\nCadastrado com sucesso!");
+                return;
+            }
+
+            Console.WriteLine("\nFalha ao cadastrar!");
         }
         public void EditarCompanhia()
         {
@@ -99,7 +107,7 @@ namespace PON_THE_FLY_2.O.Entidades
             int opcao = 0;
             bool condicaoDeSaida, validacao;
             DateTime dataAbertura = new DateTime();
-            string razaoSocial, cnpj, situacao, sql;
+            string razaoSocial, cnpj, parametro, retorno, sql;
 
             Console.Clear();
 
@@ -206,9 +214,11 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT Situacao FROM CompanhiaAerea WHERE CNPJ = '{cnpj}'";
 
-            situacao = caminho.Situacao(sql, conexao);
+            parametro = "Situacao";
 
-            if (situacao == "ATIVA")
+            retorno = caminho.RetornoDados(sql, conexao, parametro);
+
+            if (retorno == "ATIVA")
             {
                 Console.WriteLine("\nSituação desta Companhia está atualmente ATIVA!\nDeseja alterar a situação desta Companhia para INATIVA?");
                 Console.Write("\n1 - Sim\n2 - Não\n\n");
@@ -266,7 +276,7 @@ namespace PON_THE_FLY_2.O.Entidades
             BancoAeroporto caminho = new();
             SqlConnection conexao = new(caminho.CaminhoDeConexao());
             SqlCommand cmd;
-            int opcao = 0, contador = 0;
+            int opcao = 0;
             bool validacao;
             string cnpj, sql;
 

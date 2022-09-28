@@ -22,7 +22,7 @@ CREATE TABLE Aeronave(
 CREATE TABLE CompanhiaPossueAeronave(
 	CNPJ VARCHAR(14) CONSTRAINT FK_CompanhiaAerea FOREIGN KEY REFERENCES CompanhiaAerea(CNPJ),
 	INSCRICAO VARCHAR(5) CONSTRAINT FK_Aeronave FOREIGN KEY REFERENCES Aeronave(INSCRICAO),
-	PRIMARY KEY(CNPJ, INSCRICAO));
+	CONSTRAINT PK_CompanhiaPossueAeronave PRIMARY KEY(CNPJ, INSCRICAO));
 
 CREATE TABLE Voo(
 	IDVOO INT IDENTITY CONSTRAINT PK_Voo PRIMARY KEY,
@@ -32,11 +32,11 @@ CREATE TABLE Voo(
 	Situacao VARCHAR(10));
 
 CREATE TABLE AeronavePossueVoo(
-	INSCRICAO VARCHAR(5) CONSTRAINT FK_AeronaveVoo FOREIGN KEY REFERENCES Aeronavo(INSCRICAO),
+	INSCRICAO VARCHAR(5) CONSTRAINT FK_AeronaveVoo FOREIGN KEY REFERENCES Aeronave(INSCRICAO),
 	IDVOO INT CONSTRAINT FK_Voo FOREIGN KEY REFERENCES Voo(IDVOO),
 	Capacidade INT NOT NULL,
 	AcentosOcupados INT,
-	PRIMARY KEY(INSCRICAO, IDVOO));
+	CONSTRAINT PK_AeronavePossueVoo PRIMARY KEY(INSCRICAO, IDVOO));
 
 CREATE TABLE Passagem(
 	IDPASSAGEM INT IDENTITY CONSTRAINT PK_Passagem PRIMARY KEY,
@@ -78,7 +78,9 @@ SELECT * FROM CompanhiaAerea;
 
 SELECT * FROM Aeronave;
 
-DELETE FROM Aeronave WHERE INSCRICAO = 'BBB';
+SELECT * FROM Voo WHERE;
+
+SELECT * FROM AeronavePossueVoo;
 
 SELECT * FROM CompanhiaPossueAeronave;
 
@@ -86,4 +88,8 @@ SELECT companhiaaerea.RazaoSocial, companhiaaerea.CNPJ, aeronave.INSCRICAO,
 	aeronave.Capacidade, aeronave.UltimaVenda, aeronave.DataCadastro, aeronave.Situacao
 	FROM Aeronave JOIN CompanhiaPossueAeronave ON 
 	companhiapossueaeronave.INSCRICAO = aeronave.INSCRICAO
-	JOIN CompanhiaAerea ON companhiapossueaeronave.CNPJ = companhiaaerea.CNPJ
+	JOIN CompanhiaAerea ON companhiapossueaeronave.CNPJ = companhiaaerea.CNPJ WHERE aeronave.INSCRICAO
+
+INSERT AeronavePossueVoo(INSCRICAO, IDVOO, Capacidade, AcentosOcupados) VALUES('PTAAA', 1, 150, 1);
+
+UPDATE Voo SET Destino = 'ALC' WHERE IDVOO = 1;

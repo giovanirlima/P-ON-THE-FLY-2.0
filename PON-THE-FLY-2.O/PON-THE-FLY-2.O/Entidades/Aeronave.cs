@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PON_THE_FLY_2.O.Entidades;
 
-namespace POnTheFly
+namespace PON_THE_FLY_2.O.Entidades
 {
     public class Aeronave
     {
@@ -175,7 +175,7 @@ namespace POnTheFly
         {
             BancoAeroporto caminho = new();
             SqlConnection conexao = new(caminho.CaminhoDeConexao());
-            string sql, situacao, cnpj, inscricao;
+            string sql, cnpj, inscricao, parametro, retorno;
             int capacidade = -1, opcao = 0;
             bool validacao;
 
@@ -252,9 +252,11 @@ namespace POnTheFly
 
             sql = $"SELECT Situacao FROM Aeronave WHERE INSCRICAO = '{inscricao}'";
 
-            situacao = caminho.Situacao(sql, conexao);
+            parametro = "Situacao";
 
-            if (situacao == "ATIVA")
+            retorno = caminho.RetornoDados(sql, conexao, parametro);
+
+            if (retorno == "ATIVA")
             {
                 Console.WriteLine("\nSituação desta Aeronave está atualmente ATIVA!\nDeseja alterar a situação desta Aeronave para INATIVA?");
                 Console.Write("\n1 - Sim\n2 - Não\n\n");
@@ -315,7 +317,7 @@ namespace POnTheFly
             SqlConnection conexao = new(caminho.CaminhoDeConexao());
             SqlCommand cmd = new();
             Aeronave aeronave = new();
-            int opcao = 0, contador = 0;
+            int opcao = 0;
             bool validacao;
             string inscricao, sql;
 

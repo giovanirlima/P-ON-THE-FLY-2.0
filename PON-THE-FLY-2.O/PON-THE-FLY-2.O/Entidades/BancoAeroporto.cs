@@ -55,9 +55,9 @@ namespace PON_THE_FLY_2.O.Entidades
             return false;
 
         }
-        public string Situacao(string sql, SqlConnection conexao)
+        public string RetornoDados(string sql, SqlConnection conexao, string paramentro)
         {
-            string situacao = "";
+            var situacao = "";
             BancoAeroporto caminho = new();
             conexao = new(CaminhoDeConexao());
             conexao.Open();
@@ -71,7 +71,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     while (reader.Read())
                     {
-                        situacao = reader["Situacao"].ToString();
+                        situacao = reader[$"{paramentro}"].ToString();
                     }
                 }
             }
@@ -129,8 +129,27 @@ namespace PON_THE_FLY_2.O.Entidades
 
 
         }
+        public void DeleteDados(string sql, SqlConnection conexao)
+        {
+            int contador;
+            BancoAeroporto caminho = new();
+            conexao = new(CaminhoDeConexao());
+            conexao.Open();
 
-        
+            SqlCommand cmd = new(sql, conexao);
+            try
+            {
+                contador = cmd.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine();
+                Console.WriteLine(e.Message);
+            }
+
+            conexao.Close();            
+        }
+
 
     }
 }

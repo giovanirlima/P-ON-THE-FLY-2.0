@@ -6,7 +6,7 @@ using System.IO;
 using PON_THE_FLY_2.O;
 using PON_THE_FLY_2.O.Entidades;
 
-namespace POnTheFly
+namespace PON_THE_FLY_2.O.Entidades
 {
     public class Program
     {
@@ -16,6 +16,7 @@ namespace POnTheFly
             bool condicaoDeParada;
             CompanhiaAerea companhia = new();
             Aeronave aeronave = new();
+            Voo voo = new();
             BancoAeroporto conexao = new();
             SqlConnection conexaoSql = new(conexao.CaminhoDeConexao());
             SqlCommand cmd = new();
@@ -72,66 +73,11 @@ namespace POnTheFly
                     case 2:
                         aeronave.AcessarAeronave();
                         break;
+
+                    case 3:
+                        voo.AcessarVoo();
+                        break;
                         /*
-                       case 3:
-                           do
-                           {
-                               Console.Clear();
-
-                               Console.WriteLine("Bem-Vindo ao Aeroporto ON THE FLY\n\n");
-
-                               Console.WriteLine("Selecione a opção desejada: ");
-                               Console.WriteLine("\n1 - Acessar Voo");
-                               Console.WriteLine("2 - Gravar Arquivo Voo");
-                               Console.WriteLine("3 - Carregar Arquivo Voo");
-                               Console.WriteLine("\n9 - Voltar ao menu anterior");
-                               Console.Write("\nOpção: ");
-
-                               try
-                               {
-                                   opcao = int.Parse(Console.ReadLine());
-                                   condicaoDeParada = false;
-                               }
-
-                               catch (Exception)
-                               {
-                                   Console.WriteLine("Parametro de entrada inválido!");
-                                   Console.WriteLine("Pressione enter para escolher novamente!");
-                                   Console.ReadKey();
-                                   condicaoDeParada = true;
-                               }
-
-                               if (opcao < 0 || opcao > 3 && opcao != 9)
-                               {
-                                   if (!condicaoDeParada)
-                                   {
-                                       Console.WriteLine("Escolha uma das opções disponiveis!!");
-                                       Console.WriteLine("Pressione enter para escolher novamente!");
-                                       Console.ReadKey();
-                                       condicaoDeParada = true;
-                                   }
-                               }
-
-                               switch (opcao)
-                               {
-                                   case 1:
-                                       voo.AcessarVoo(listaVoo, listaAeronaves, IATA);
-                                       break;
-
-                                   case 2:
-                                       voo.GravarArquivoVoo(listaVoo);
-                                       Console.ReadKey();
-                                       break;
-
-                                   case 3:
-                                       voo.CarregarArquivoVoo(listaVoo);
-                                       Console.ReadKey();
-                                       break;
-                               }
-
-                           } while (opcao != 9);
-                           break;
-
                        case 4:
                            do
                            {
