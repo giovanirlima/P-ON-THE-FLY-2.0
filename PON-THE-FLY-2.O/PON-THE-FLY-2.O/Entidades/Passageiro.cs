@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using PON_THE_FLY_2.O.Entidades;
 
 namespace POnTheFly
@@ -47,8 +42,7 @@ namespace POnTheFly
             return cpf.EndsWith(digito);
         }
         public static void CadastrarPassageiro()
-        {
-            BancoAeroporto caminho = new();
+        {            
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql, cpf, nome = "", sexo;
             bool validacao = false;

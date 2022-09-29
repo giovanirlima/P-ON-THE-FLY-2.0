@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PON_THE_FLY_2.O.Entidades;
 
 namespace PON_THE_FLY_2.O.Entidades
 {
     internal class Venda
     {
         public static void CadastrarVenda()
-        {
-            BancoAeroporto caminho = new();
+        {            
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql, parametro, cpf, inscricao;
             double valorPassagem, resultado;
@@ -37,6 +31,14 @@ namespace PON_THE_FLY_2.O.Entidades
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nCPF do Passageiro não cadastrado!");
+                return;
+            }
+
+            sql = $"SELECT * FROM RestritosCPF WHERE '{cpf}'";
+
+            if (BancoAeroporto.LocalizarDados(sql, conexao))
+            {
+                Console.WriteLine("\nPassageiro com CPF restrito, não possivel realizar a venda!");
                 return;
             }
 

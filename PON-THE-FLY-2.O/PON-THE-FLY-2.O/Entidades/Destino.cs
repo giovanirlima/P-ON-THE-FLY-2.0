@@ -7,7 +7,6 @@ namespace PON_THE_FLY_2.O.Entidades
         public Destino()
         {            
         }
-
         public bool ListaDestino(string destino)
         {
             List<string> IATA = new() {"ALC", "AMS", "AJU", "AQP", "AUA", "ASU", "ATH", "ATL", "BWI", "BKK", "BCN", "BRC"

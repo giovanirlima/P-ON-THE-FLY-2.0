@@ -1,7 +1,5 @@
 CREATE DATABASE AEROPORTO;
 
-DROP DATABASE AEROPORTO;
-
 USE AEROPORTO;
 
 CREATE TABLE CompanhiaAerea(
@@ -66,64 +64,18 @@ CREATE TABLE Passageiro(
 	UltimaCompra DATE NOT NULL,
 	Situacao VARCHAR(10));
 
-INSERT Passageiro VALUES('1', '2022/09/28', 'Giovani', '1994/03/24', 'Masculino', 'ATIVO');
-
-SELECT * FROM Passageiro;
-
-DELETE FROM Passageiro;
-
-
-CREATE TABLE Restricao(
-	CNPJ VARCHAR(14) UNIQUE,
+CREATE TABLE RestritosCPF(	
 	CPF VARCHAR(11) UNIQUE);
 
-SELECT * FROM CompanhiaAerea;
-
-SELECT companhiaaerea.RazaoSocial, companhiaaerea.CNPJ,
-	companhiaaerea.DataAbertura, companhiaaerea.UltimoVoo,
-	companhiaaerea.DataCadastro, companhiaaerea.Situacao FROM CompanhiaAerea;
-
-SELECT Capacidade FROM AeronavePossueVoo
-JOIN Passagem ON passagem.IDVOO = aeronavepossuevoo.IDVOO 
-WHERE passagem.IDPASSAGEM = '1';
-
-SELECT aeronavepossuev
-
-SELECT * FROM CompanhiaAerea;
-
-SELECT * FROM Aeronave;
-
-SELECT * FROM Voo;
-
-SELECT * FROM AeronavePossueVoo;
-
-SELECT * FROM CompanhiaPossueAeronave;
-
-SELECT * FROM Passagem;
-
-SELECT * FROM VendaPassagem;
-
-SELECT aeronavepossuevoo.INSCRICAO, passagem.IDVOO, passagem.IDPASSAGEM, vendapassagem.IDITEM,
-	vendapassagem.ValorUnitarioAtual FROM VendaPassagem
-	JOIN Passagem ON passagem.IDPASSAGEM = vendapassagem.IDPASSAGEM
-	JOIN AeronavePossueVoo ON aeronavepossuevoo.IDVOO = passagem.IDVOO
-	WHERE vendapassagem.IDITEM = '17';
+CREATE TABLE RestritosCNPJ(
+	CNPJ VARCHAR(14) UNIQUE);
 
 
 
-SELECT passagem.IDVOO, passagem.IDPASSAGEM, passagem.ValorPassagem, passagem.DataUltimaOperacao, passagem.Situacao FROM Passagem;
-
-SELECT aeronavepossuevoo.INSCRICAO, aeronavepossuevoo.IDVOO, passagem.IDPASSAGEM, aeronavepossuevoo.AcentosOcupados, passagem.DataUltimaOperacao, 
-	passagem.ValorPassagem, passagem.Situacao FROM Passagem JOIN AeronavePossueVoo 
-	ON aeronavepossuevoo.IDVOO = passagem.IDVOO 
 
 
 
-INSERT AeronavePossueVoo(INSCRICAO, IDVOO, Capacidade, AcentosOcupados) VALUES('PTAAA', 1, 150, 1);
 
-UPDATE Voo SET Destino = 'ALC' WHERE IDVOO = 1;
 
-DELETE FROM AeronavePossueVoo WHERE IDVOO = 1 AND INSCRICAO = 'PTAAA';
 
-CREATE TRIGGER Conversao 
-ON Passagem
+

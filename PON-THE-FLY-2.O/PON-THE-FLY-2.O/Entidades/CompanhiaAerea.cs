@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PON_THE_FLY_2.O.Entidades
 {
@@ -21,7 +16,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.Clear();
 
-            Console.WriteLine("Vamos iniciar seu cadastro\n");
+            Console.WriteLine("TELA DE CADASTRO\n");
             Console.Write("Informe a Razão social: ");
             razaoSocial = Console.ReadLine().ToUpper();
 
@@ -79,7 +74,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
-            Console.WriteLine("\nFalha ao cadastrar!");
+            Mensagem.FalseAlteradoMessage();
         }
         public static void EditarCompanhia()
         {            
@@ -104,7 +99,8 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.WriteLine("CNPJ informado não está cadastrado!");
+                Console.Write("\nCNPJ informado não está cadastrado!");
+                return;
             }
 
             do
@@ -123,8 +119,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 catch (Exception)
                 {
-                    Console.WriteLine("\nParametro informado é inválido!");
-                    Console.WriteLine("Pressione enter para continuar!");
+                    Mensagem.ParametroMessage();
                     Console.ReadKey();
                     condicaoDeSaida = true;
                 }
@@ -133,8 +128,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeSaida)
                     {
-                        Console.WriteLine("\nOpção informada é inválida!");
-                        Console.WriteLine("Pressione enter para continuar!");
+                        Mensagem.OpcaoMessage();
                         Console.ReadKey();
                         condicaoDeSaida = true;
                     }
@@ -149,7 +143,13 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE CompanhiaAerea SET RazaoSocial = '{razaoSocial}' WHERE CNPJ = '{cnpj}'";
 
-                BancoAeroporto.UpdateDados(sql, conexao);
+                if (BancoAeroporto.UpdateDados(sql, conexao))
+                {
+                    Mensagem.TrueAlteradoMessage();
+                    return;
+                }
+
+                Mensagem.FalseAlteradoMessage();
                 return;
             }
 
@@ -184,8 +184,13 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE CompanhiaAerea SET DataAbertura = '{dataAbertura}' WHERE CNPJ = '{cnpj}'";
 
-                BancoAeroporto.UpdateDados(sql, conexao);
+                if (BancoAeroporto.UpdateDados(sql, conexao))
+                {
+                    Mensagem.TrueAlteradoMessage();
+                    return;
+                }
 
+                Mensagem.FalseAlteradoMessage();
                 return;
             }
 
@@ -209,14 +214,15 @@ namespace PON_THE_FLY_2.O.Entidades
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("\nParametro de entrada inválido!\n");
+                        Mensagem.ParametroMessage();
                         condicaoDeSaida = true;
                     }
                     if (opcao < 1 || opcao > 2)
                     {
                         if (!condicaoDeSaida)
                         {
-                            Console.WriteLine("\nOpção inválida!\n");
+                            Mensagem.OpcaoMessage();
+                            condicaoDeSaida = true;
                         }
                     }
                 } while (condicaoDeSaida);
@@ -235,6 +241,8 @@ namespace PON_THE_FLY_2.O.Entidades
                     Mensagem.FalseAlteradoMessage();
                     return;
                 }
+
+                Console.Write("\nAté logo!");
             }
 
             Console.WriteLine("\nSituação desta Companhia está atualmente INATIVA!\nDeseja alterar a situação desta Companhia para ATIVA?");
@@ -257,7 +265,6 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.WriteLine("\nAté logo!");
         }
-
         public static void ImprimirCompanhia()
         {            
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
@@ -283,7 +290,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("\nParametro de dado inválido!\n");
+                    Mensagem.ParametroMessage();
                     validacao = true;
                 }
 
@@ -291,7 +298,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!validacao)
                     {
-                        Console.WriteLine("\nOpção informada é inválida!");
+                        Mensagem.OpcaoMessage();
                         validacao = true;
                     }
                 }
@@ -338,7 +345,6 @@ namespace PON_THE_FLY_2.O.Entidades
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nCNPJ informado não está cadastrado em nosso banco de dados!");
-                Console.Write("Pressione enter apra continuar!");
                 return;
             }
 

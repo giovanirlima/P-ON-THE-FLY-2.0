@@ -118,9 +118,9 @@ namespace PON_THE_FLY_2.O.Entidades
 
             return false;
         }
-        public static void DeleteDados(string sql, SqlConnection conexao)
+        public static bool DeleteDados(string sql, SqlConnection conexao)
         {
-            int contador;
+            int contador = 0;
             BancoAeroporto caminho = new();
             conexao = new(CaminhoDeConexao());
             conexao.Open();
@@ -136,7 +136,14 @@ namespace PON_THE_FLY_2.O.Entidades
                 Console.WriteLine(e.Message);
             }
 
-            conexao.Close();            
+            conexao.Close();
+
+            if (contador > 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
 
