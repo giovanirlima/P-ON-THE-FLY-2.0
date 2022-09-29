@@ -12,26 +12,13 @@ namespace PON_THE_FLY_2.O.Entidades
 {
     public class Aeronave
     {
-        public string Inscricao { get; set; }
-        public string Tipo { get; set; }
-        public string Capacidade { get; set; }
-        public string AcentosOcupado { get; set; }
-        public DateTime UltimaVenda { get; set; }
-        public DateTime DataCadastro { get; set; }
-        public char Situacao { get; set; }
-
-        public Aeronave()
-        {
-        }
-
-        public void CadastrarAeronave()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
+        public static void CadastrarAeronave()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql;
 
-            int opcao = 0, contador, capacidade = 0;
-            bool condicaoDeParada, validacao;
+            int opcao = 0, capacidade = 0;
+            bool condicaoDeParada; 
             string inscricao, codigoInscricao, cnpj;
 
             Console.Clear();
@@ -41,11 +28,9 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Informe o CNPJ da Companhia Aerea responsável pela Aeronave: ");
             cnpj = Console.ReadLine().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
 
-            sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = '{cnpj}'";
+            sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = '{cnpj}'";            
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nCNPJ informado não está cadastrado como uma Companhia Aerea!");
                 return;
@@ -120,9 +105,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM Aeronave WHERE INSCRICAO = '{codigoInscricao}'";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (validacao)
+            if (BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nCódigo de inscrição informado já está cadastrado em outra aeronave!");
                 return;
@@ -153,16 +136,12 @@ namespace PON_THE_FLY_2.O.Entidades
             } while (condicaoDeParada);
 
             sql = $"INSERT Aeronave VALUES('{codigoInscricao}', '{capacidade}', '{DateTime.Now.ToShortDateString()}', '{DateTime.Now.ToShortDateString()}', 'ATIVA')";
-
-            contador = caminho.InsertDados(sql, conexao);
-
-            if (contador > 0)
+                       
+            if (BancoAeroporto.InsertDados(sql, conexao))
             {
-                sql = $"INSERT CompanhiaPossueAeronave VALUES('{cnpj}', '{codigoInscricao}')";
+                sql = $"INSERT CompanhiaPossueAeronave VALUES('{cnpj}', '{codigoInscricao}')";                
 
-                contador = caminho.InsertDados(sql, conexao);
-
-                if (contador > 0)
+                if (BancoAeroporto.InsertDados(sql, conexao))
                 {
                     Console.WriteLine("\nCadastrado com sucesso!");
                     return;
@@ -171,10 +150,9 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.WriteLine("\nFalha ao cadastrar Aeronave!");
         }
-        public void EditarAeronave()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
+        public static void EditarAeronave()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql, cnpj, inscricao, parametro, retorno;
             int capacidade = -1, opcao = 0;
             bool validacao;
@@ -190,9 +168,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = '{cnpj}'";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nCNPJ informado não está cadastrado como uma Companhia Aerea!");
                 return;
@@ -202,10 +178,8 @@ namespace PON_THE_FLY_2.O.Entidades
             inscricao = Console.ReadLine().ToUpper().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
 
             sql = $"SELECT * FROM CompanhiaPossueAeronave WHERE CNPJ = '{cnpj}' AND INSCRICAO = {inscricao}";
-
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+                       
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nINSCRICAO informada não tem associação com o CNPJ da Companhia informado!");
                 return;
@@ -245,7 +219,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE Aeronave SET Capacidade = '{capacidade}' WHERE INSCRICAO = '{inscricao}'";
 
-                caminho.UpdateDados(sql, conexao);
+                BancoAeroporto.UpdateDados(sql, conexao);
 
                 return;
             }
@@ -254,7 +228,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             parametro = "Situacao";
 
-            retorno = caminho.RetornoDados(sql, conexao, parametro);
+            retorno = BancoAeroporto.RetornoDados(sql, conexao, parametro);
 
             if (retorno == "ATIVA")
             {
@@ -287,7 +261,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     sql = $"UPDATE Aeronave SET Situacao = 'INATIVA' WHERE INSCRICAO = '{inscricao}'";
 
-                    caminho.UpdateDados(sql, conexao);
+                    BancoAeroporto.UpdateDados(sql, conexao);
 
                     return;
                 }
@@ -304,19 +278,17 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 sql = $"UPDATE Aeronave SET Situacao = 'ATIVA' WHERE INSCRICAO = '{inscricao}'";
 
-                caminho.UpdateDados(sql, conexao);
+                BancoAeroporto.UpdateDados(sql, conexao);
 
                 return;
             }
 
             Console.WriteLine("\nAté logo!");
         }
-        public void ImprimirAeronave()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
-            SqlCommand cmd = new();
-            Aeronave aeronave = new();
+        public static void ImprimirAeronave()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
+            SqlCommand cmd;
             int opcao = 0;
             bool validacao;
             string inscricao, sql;
@@ -357,11 +329,9 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 conexao.Open();
 
-                cmd = new("SELECT companhiaaerea.RazaoSocial, companhiaaerea.CNPJ, aeronave.INSCRICAO, " +
-                          "aeronave.Capacidade, aeronave.UltimaVenda, aeronave.DataCadastro, aeronave.Situacao " +
-                          "FROM Aeronave JOIN CompanhiaPossueAeronave ON " +
-                          "companhiapossueaeronave.INSCRICAO = aeronave.INSCRICAO " +
-                          "JOIN CompanhiaAerea ON companhiapossueaeronave.CNPJ = companhiaaerea.CNPJ", conexao);
+                cmd = new("SELECT aeronavepossuevoo.INSCRICAO, aeronavepossuevoo.IDVOO, passagem.IDPASSAGEM, " +
+                          "aeronavepossuevoo.AcentosOcupados, passagem.DataUltimaOperacao, passagem.ValorPassagem, " +
+                          "passagem.Situacao FROM Passagem JOIN AeronavePossueVoo ON aeronavepossuevoo.IDVOO = passagem.IDVOO ", conexao);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -369,14 +339,14 @@ namespace PON_THE_FLY_2.O.Entidades
 
                     while (reader.Read())
                     {
-                        Console.WriteLine("AERONAVE\n");
-                        Console.WriteLine($"Propietário: {reader.GetString(0)}");
-                        Console.WriteLine($"CNPJ: {reader.GetString(1)}");
-                        Console.WriteLine($"Inscrição: {reader.GetString(2)}");
-                        Console.WriteLine($"Capacidade: {reader.GetInt32(3)}");
-                        Console.WriteLine($"Última Venda: {reader.GetDateTime(4).ToShortDateString()}");
-                        Console.WriteLine($"Data Cadastro: {reader.GetDateTime(5).ToShortDateString()}");
-                        Console.WriteLine($"Situacao: {reader.GetString(6)}\n");
+                        Console.WriteLine("PASSAGEM\n");
+                        Console.WriteLine($"Inscrição Aeronave: {reader.GetString(0)}");
+                        Console.WriteLine($"ID Voo: {reader.GetInt32(1)}");
+                        Console.WriteLine($"ID Passagem: {reader.GetInt32(2)}");
+                        Console.WriteLine($"Acentos Ocupados: {reader.GetInt32(3)}");
+                        Console.WriteLine($"Última Venda: {reader.GetDateTime(4).ToShortDateString()}");                        
+                        Console.WriteLine($"Preço: {reader.GetString(5)}");
+                        Console.WriteLine($"Situação: {reader.GetString(6)}");
                     }
                 }
 
@@ -388,7 +358,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Clear();
             do
             {
-                Console.Write("\nInforme qual A INSCRIÇÃO da Aeronave que deseja localizar: ");
+                Console.Write("\nInforme qual o ID da Passagem que deseja localizar: ");
 
                 inscricao = Console.ReadLine().ToUpper().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
                 validacao = false;
@@ -408,9 +378,7 @@ namespace PON_THE_FLY_2.O.Entidades
                           "companhiapossueaeronave.INSCRICAO = aeronave.INSCRICAO " +
                           $"JOIN CompanhiaAerea ON companhiapossueaeronave.CNPJ = companhiaaerea.CNPJ WHERE aeronave.INSCRICAO = '{inscricao}'";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nINSCRIÇÃO informado não está cadastrado em nosso banco de dados!");
                 return;
@@ -445,9 +413,8 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Pressione enter para continuar!");
             return;
         }
-        public void AcessarAeronave()
-        {
-            Aeronave aeronave = new();
+        public static void AcessarAeronave()
+        {            
             int opcao = -1;
             bool condicaoDeParada;
 
@@ -471,8 +438,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 catch (Exception)
                 {
-                    Console.WriteLine("\nParametro de entrada inválido!");
-                    Console.WriteLine("Pressione enter para escolher novamente!");
+                    Mensagem.ParametroMessage();                    
                     Console.ReadKey();
                     condicaoDeParada = true;
                 }
@@ -481,27 +447,25 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeParada)
                     {
-                        Console.WriteLine("\nEscolha uma das opções disponiveis!!");
-                        Console.WriteLine("Pressione enter para escolher novamente!");
-                        Console.ReadKey();
-                        condicaoDeParada = true;
+                        Mensagem.OpcaoMessage();                        
+                        Console.ReadKey();                        
                     }
                 }
 
                 switch (opcao)
                 {
                     case 1:
-                        aeronave.CadastrarAeronave();
+                        CadastrarAeronave();
                         Console.ReadKey();
                         break;
 
                     case 2:
-                        aeronave.EditarAeronave();
+                        EditarAeronave();
                         Console.ReadKey();
                         break;
 
                     case 3:
-                        aeronave.ImprimirAeronave();
+                        ImprimirAeronave();
                         Console.ReadKey();
                         break;
                 }

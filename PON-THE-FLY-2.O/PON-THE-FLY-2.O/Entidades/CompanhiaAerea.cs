@@ -10,26 +10,13 @@ namespace PON_THE_FLY_2.O.Entidades
 {
     public class CompanhiaAerea
     {
-        public string RazaoSocial { get; set; }
-        public string Cnpj { get; set; }
-        public DateTime DataAbertura { get; set; }
-        public DateTime UltimoVoo { get; set; }
-        public DateTime DataCadastro { get; set; }
-        public char Situacao { get; set; }
+        public static void CadastrarCompanhia()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
 
-        public CompanhiaAerea()
-        {
-        }
-
-        public void CadastrarCompanhia()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
-
-            bool condicaoDeSaida, validacao;
+            bool condicaoDeSaida;
             string cnpj, razaoSocial, sql;
-            int contador;
-            DateTime dataAbertura = new DateTime();
+            DateTime dataAbertura = new();
 
 
             Console.Clear();
@@ -55,13 +42,9 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = {cnpj}";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-
-            if (validacao)
+            if (BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.WriteLine("\nCompanhia Aerea já cadastrada!\n");
-                conexao.Close();
+                Console.Write("\nCompanhia Aerea já cadastrada!\n");
                 return;
             }
 
@@ -90,23 +73,20 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"INSERT CompanhiaAerea VALUES('{cnpj}', '{razaoSocial}', '{dataAbertura}', '{DateTime.Now.ToShortDateString()}', '{DateTime.Now.ToShortDateString()}', 'ATIVA')";
 
-            contador = caminho.InsertDados(sql, conexao);
-
-            if (contador > 0)
+            if (BancoAeroporto.InsertDados(sql, conexao))
             {
-                Console.WriteLine("\nCadastrado com sucesso!");
+                Mensagem.TrueAlteradoMessage();
                 return;
             }
 
             Console.WriteLine("\nFalha ao cadastrar!");
         }
-        public void EditarCompanhia()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
+        public static void EditarCompanhia()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             int opcao = 0;
-            bool condicaoDeSaida, validacao;
-            DateTime dataAbertura = new DateTime();
+            bool condicaoDeSaida;
+            DateTime dataAbertura = new();
             string razaoSocial, cnpj, parametro, retorno, sql;
 
             Console.Clear();
@@ -120,11 +100,9 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
-            sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = {cnpj}";
+            sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = {cnpj}";            
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("CNPJ informado não está cadastrado!");
             }
@@ -171,8 +149,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE CompanhiaAerea SET RazaoSocial = '{razaoSocial}' WHERE CNPJ = '{cnpj}'";
 
-                caminho.UpdateDados(sql, conexao);
-
+                BancoAeroporto.UpdateDados(sql, conexao);
                 return;
             }
 
@@ -207,7 +184,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE CompanhiaAerea SET DataAbertura = '{dataAbertura}' WHERE CNPJ = '{cnpj}'";
 
-                caminho.UpdateDados(sql, conexao);
+                BancoAeroporto.UpdateDados(sql, conexao);
 
                 return;
             }
@@ -216,7 +193,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             parametro = "Situacao";
 
-            retorno = caminho.RetornoDados(sql, conexao, parametro);
+            retorno = BancoAeroporto.RetornoDados(sql, conexao, parametro);
 
             if (retorno == "ATIVA")
             {
@@ -249,12 +226,15 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     sql = $"UPDATE CompanhiaAerea SET Situacao = 'INATIVA' WHERE CNPJ = '{cnpj}'";
 
-                    caminho.UpdateDados(sql, conexao);
+                    if (BancoAeroporto.UpdateDados(sql, conexao))
+                    {
+                        Mensagem.TrueAlteradoMessage();
+                        return;
+                    }
 
+                    Mensagem.FalseAlteradoMessage();
                     return;
                 }
-
-                Console.WriteLine("\nAté logo!");
             }
 
             Console.WriteLine("\nSituação desta Companhia está atualmente INATIVA!\nDeseja alterar a situação desta Companhia para ATIVA?");
@@ -262,19 +242,25 @@ namespace PON_THE_FLY_2.O.Entidades
             opcao = int.Parse(Console.ReadLine());
 
             if (opcao == 1)
-            {                
+            {
                 sql = $"UPDATE CompanhiaAerea SET Situacao = 'ATIVA' WHERE CNPJ = '{cnpj}'";
 
-                caminho.UpdateDados(sql, conexao);
+                if (BancoAeroporto.UpdateDados(sql, conexao))
+                {
+                    Mensagem.TrueAlteradoMessage();
+                    return;
+                }
+
+                Mensagem.FalseAlteradoMessage();
                 return;
             }
 
             Console.WriteLine("\nAté logo!");
         }
-        public void ImprimirCompanhia()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
+
+        public static void ImprimirCompanhia()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             SqlCommand cmd;
             int opcao = 0;
             bool validacao;
@@ -348,10 +334,8 @@ namespace PON_THE_FLY_2.O.Entidades
             cnpj = Console.ReadLine().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
 
             sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = '{cnpj}'";
-
-            validacao = caminho.LocalizarDados(sql, conexao);           
-
-            if (!validacao)
+              
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nCNPJ informado não está cadastrado em nosso banco de dados!");
                 Console.Write("Pressione enter apra continuar!");
@@ -385,7 +369,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Pressione enter para continuar!");
             return;
         }
-        public bool ValidarCnpj(string cnpj)
+        public static bool ValidarCnpj(string cnpj)
         {
             int[] multiplicador1 = new int[12] { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
             int[] multiplicador2 = new int[13] { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
@@ -471,7 +455,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             digito = resto.ToString();
 
-            tempCnpj = tempCnpj + digito;
+            tempCnpj += digito;
             soma = 0;
             for (int i = 0; i < 13; i++)
                 soma += int.Parse(tempCnpj[i].ToString()) * multiplicador2[i];
@@ -482,14 +466,13 @@ namespace PON_THE_FLY_2.O.Entidades
             else
                 resto = 11 - resto;
 
-            digito = digito + resto.ToString();
+            digito += resto.ToString();
 
             return cnpj.EndsWith(digito);
 
         }
-        public void AcessarCompanhia()
-        {
-            CompanhiaAerea companhia = new();
+        public static void AcessarCompanhia()
+        {            
             int opcao = 0;
             bool condicaoDeParada;
 
@@ -514,8 +497,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 catch (Exception)
                 {
-                    Console.WriteLine("\nParametro de entrada inválido!");
-                    Console.WriteLine("Pressione enter para escolher novamente!");
+                    Mensagem.ParametroMessage();                    
                     Console.ReadKey();
                     condicaoDeParada = true;
                 }
@@ -524,27 +506,25 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeParada)
                     {
-                        Console.WriteLine("\nEscolha uma das opções disponiveis!!");
-                        Console.WriteLine("Pressione enter para escolher novamente!");
-                        Console.ReadKey();
-                        condicaoDeParada = true;
+                        Mensagem.OpcaoMessage();                        
+                        Console.ReadKey();                        
                     }
                 }
 
                 switch (opcao)
                 {
                     case 1:
-                        companhia.CadastrarCompanhia();
+                        CadastrarCompanhia();
                         Console.ReadKey();
                         break;
 
                     case 2:
-                        companhia.EditarCompanhia();
+                        EditarCompanhia();
                         Console.ReadKey();
                         break;
 
                     case 3:
-                        companhia.ImprimirCompanhia();
+                        ImprimirCompanhia();
                         Console.ReadKey();
                         break;
 

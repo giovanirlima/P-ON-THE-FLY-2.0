@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PON_THE_FLY_2.O.Entidades
 {
@@ -22,15 +17,14 @@ namespace PON_THE_FLY_2.O.Entidades
         {
         }
 
-        public void CadastrarVoo()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
+        public static void CadastrarVoo()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql, inscricao;
-            int idvoo = 0, capacidade = 0, contador = 0;
+            int idvoo = 0, capacidade = 0;
             Destino dest = new();
             DateTime dataVoo = DateTime.Now;
-            bool condicaoDeSaida, validacao;
+            bool condicaoDeSaida;
 
             Console.Clear();
 
@@ -39,9 +33,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM Aeronave WHERE INSCRICAO = '{inscricao}';";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nAeronave não localizada!");
                 return;
@@ -51,8 +43,10 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT IDVOO FROM AeronavePossueVoo WHERE INSCRICAO = '{inscricao}'";
 
-            SqlCommand cmd = new(sql, conexao);
-            cmd.CommandType = CommandType.Text;
+            SqlCommand cmd = new(sql, conexao)
+            {
+                CommandType = CommandType.Text
+            };
 
             using (SqlDataReader reader = cmd.ExecuteReader())
             {
@@ -76,9 +70,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Informe a IATA do destino de voo: ");
             string destino = Console.ReadLine().ToUpper();
 
-            validacao = dest.ListaDestino(destino);
-
-            if (!validacao)
+            if (!dest.ListaDestino(destino))
             {
                 Console.WriteLine("IATA informado não cadastrada!");
                 return;
@@ -112,19 +104,17 @@ namespace PON_THE_FLY_2.O.Entidades
             } while (condicaoDeSaida);
 
             sql = $"INSERT Voo VALUES('{destino}', '{dataVoo}', '{DateTime.Now.ToShortDateString()}', 'ATIVO');";
-
-            contador = caminho.InsertDados(sql, conexao);
-
-            if (contador > 0)
-            {
-                contador = 0;
-
+                     
+            if (BancoAeroporto.InsertDados(sql, conexao))
+            {               
                 conexao.Open();
 
                 sql = $"SELECT Capacidade FROM Aeronave WHERE INSCRICAO = '{inscricao}'";
 
-                cmd = new(sql, conexao);
-                cmd.CommandType = CommandType.Text;
+                cmd = new(sql, conexao)
+                {
+                    CommandType = CommandType.Text
+                };
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -141,26 +131,23 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"INSERT AeronavePossueVoo(INSCRICAO, IDVOO, Capacidade, AcentosOcupados) VALUES('{inscricao}', '{idvoo + 1}', '{capacidade}', 0);";
 
-                contador = caminho.InsertDados(sql, conexao);
-
-                if (contador > 0)
+                if (BancoAeroporto.InsertDados(sql, conexao))
                 {
-                    Console.Write("\nVoo cadastrado com sucesso!");
+                    Mensagem.TrueCadastradoMessage();
                     return;
                 }
             }
 
             Console.Write("\nFalha ao cadastrar Voo!");
         }
-        public void EditarVoo()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
+        public static void EditarVoo()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             Destino dest = new();
             string sql, inscricao, parametro, retorno;
             DateTime data = new();
             bool validacao;
-            int idvoo, op = 0, capacidade, ocupados, resposta = 0;
+            int idvoo, op = 0, capacidade, ocupados;
 
             Console.Clear();
 
@@ -177,9 +164,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM Voo WHERE IDVOO = '{idvoo}';";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nVoo não cadastrado!");
                 return;
@@ -232,7 +217,9 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE Voo SET Destino = '{destino}' WHERE IDVOO = '{idvoo}';";
 
-                caminho.UpdateDados(sql, conexao);
+                BancoAeroporto.UpdateDados(sql, conexao);
+
+
 
                 return;
             }
@@ -244,19 +231,17 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"SELECT * FROM Aeronave WHERE INSCRICAO = '{inscricao}'";
 
-                validacao = caminho.LocalizarDados(sql, conexao);
+                if (!BancoAeroporto.LocalizarDados(sql, conexao))
+                {
+                    Console.Write("\nAeronave informada não possue cadastro!");
+                    return;
+                }
 
                 sql = $"SELECT * FROM AeronavePossueVoo WHERE IDVOO = '{idvoo}'";
 
                 parametro = "INSCRICAO";
 
-                retorno = caminho.RetornoDados(sql, conexao, parametro);
-
-                if (!validacao)
-                {
-                    Console.Write("\nAeronave informada não possue cadastro!");
-                    return;
-                }
+                retorno = BancoAeroporto.RetornoDados(sql, conexao, parametro);
 
                 if (retorno == inscricao)
                 {
@@ -268,28 +253,27 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 parametro = "Capacidade";
 
-                capacidade = Convert.ToInt32(caminho.RetornoDados(sql, conexao, parametro));
+                capacidade = Convert.ToInt32(BancoAeroporto.RetornoDados(sql, conexao, parametro));
 
                 sql = $"SELECT * FROM AeronavePossueVoo WHERE IDVOO = '{idvoo}' AND INSCRICAO = '{retorno}';";
 
                 parametro = "AcentosOcupados";
 
-                ocupados = Convert.ToInt32(caminho.RetornoDados(sql, conexao, parametro));
+                ocupados = Convert.ToInt32(BancoAeroporto.RetornoDados(sql, conexao, parametro));
 
                 sql = $"DELETE FROM AeronavePossueVoo WHERE IDVOO = '{idvoo}' AND INSCRICAO = '{retorno}';";
 
-                caminho.DeleteDados(sql, conexao);
+                BancoAeroporto.DeleteDados(sql, conexao);
 
                 sql = $"INSERT AeronavePossueVoo(INSCRICAO, IDVOO, Capacidade, AcentosOcupados) VALUES('{inscricao}', '{idvoo}', '{capacidade}', '{ocupados}');";
 
-                resposta = caminho.InsertDados(sql, conexao);
-
-                if (resposta > 0)
+                if (BancoAeroporto.InsertDados(sql, conexao))
                 {
-                    Console.Write("\nAlterado com sucesso!");
+                    Mensagem.TrueAlteradoMessage();
                     return;
                 }
 
+                Mensagem.FalseAlteradoMessage();
                 return;
             }
 
@@ -320,8 +304,15 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 sql = $"UPDATE Voo SET DataVoo = '{data}' WHERE IDVOO = '{idvoo}';";
 
-                caminho.UpdateDados(sql, conexao);
+                ;
 
+                if (BancoAeroporto.UpdateDados(sql, conexao))
+                {
+                    Mensagem.TrueAlteradoMessage();
+                    return;
+                }
+
+                Mensagem.FalseAlteradoMessage();
                 return;
             }
 
@@ -330,8 +321,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 sql = $"SELECT Situacao FROM Voo WHERE IDVOO = '{idvoo}'";
 
                 parametro = "Situacao";
-                retorno = caminho.RetornoDados(sql, conexao, parametro);
-
+                retorno = BancoAeroporto.RetornoDados(sql, conexao, parametro);
 
                 if (retorno == "ATIVO")
                 {
@@ -364,8 +354,13 @@ namespace PON_THE_FLY_2.O.Entidades
                     {
                         sql = $"UPDATE Voo SET Situacao = 'INATIVO' WHERE IDVOO = '{idvoo}'";
 
-                        caminho.UpdateDados(sql, conexao);
+                        if (BancoAeroporto.UpdateDados(sql, conexao))
+                        {
+                            Mensagem.TrueAlteradoMessage();
+                            return;
+                        }
 
+                        Mensagem.FalseAlteradoMessage();
                         return;
                     }
 
@@ -379,9 +374,15 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 if (op == 1)
                 {
-                    sql = $"UPDATE Voo SET Situacao = 'ATIVA' WHERE IDVOO = '{idvoo}'";
+                    sql = $"UPDATE Voo SET Situacao = 'ATIVO' WHERE IDVOO = '{idvoo}'";
 
-                    caminho.UpdateDados(sql, conexao);
+                    if (BancoAeroporto.UpdateDados(sql, conexao))
+                    {
+                        Mensagem.TrueAlteradoMessage();
+                        return;
+                    }
+
+                    Mensagem.FalseAlteradoMessage();
                     return;
                 }
 
@@ -390,11 +391,10 @@ namespace PON_THE_FLY_2.O.Entidades
             }
             Console.Write("\nAté logo!");
         }
-        public void ImprimirVoo()
-        {
-            BancoAeroporto caminho = new();
-            SqlConnection conexao = new(caminho.CaminhoDeConexao());
-            SqlCommand cmd = new();
+        public static void ImprimirVoo()
+        {            
+            SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
+            SqlCommand cmd;            
             int opcao = 0, idvoo;
             bool validacao;
             string sql;
@@ -403,8 +403,8 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.WriteLine("Ola,");
             Console.WriteLine("\nEscolha a opção desejada:\n");
-            Console.WriteLine("1 - Ver todos Voo cadastrados");
-            Console.WriteLine("2 - Ver um especifico");
+            Console.WriteLine("1 - Ver todas Passagens cadastradas");
+            Console.WriteLine("2 - Ver uma especifica");
             Console.WriteLine("\n9 - Voltar ao menu anterior");
             do
             {
@@ -416,7 +416,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("\nParametro de dado inválido!\n");
+                    Mensagem.ParametroMessage();
                     validacao = true;
                 }
 
@@ -424,7 +424,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!validacao)
                     {
-                        Console.WriteLine("\nOpção informada é inválida!");
+                        Mensagem.OpcaoMessage();
                         validacao = true;
                     }
                 }
@@ -478,15 +478,13 @@ namespace PON_THE_FLY_2.O.Entidades
             }
             catch (Exception)
             {
-                Console.WriteLine("\nParametro de dado inválido!");
+                Mensagem.ParametroMessage();
                 return;
             }
 
             sql = $"SELECT * FROM Voo WHERE IDVOO = '{idvoo}';";
 
-            validacao = caminho.LocalizarDados(sql, conexao);
-
-            if (!validacao)
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nVoo não cadastrado!");
                 return;
@@ -520,11 +518,10 @@ namespace PON_THE_FLY_2.O.Entidades
             conexao.Close();
             return;
         }
-        public void AcessarVoo()
+        public static void AcessarVoo()
         {
             int opcao = 0;
-            bool condicaoDeParada = false;
-            Voo voo = new();
+            bool condicaoDeParada;            
 
             do
             {
@@ -546,8 +543,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 catch (Exception)
                 {
-                    Console.WriteLine("\nParametro de entrada inválido!");
-                    Console.WriteLine("Pressione enter para escolher novamente!");
+                    Mensagem.ParametroMessage();
                     Console.ReadKey();
                     condicaoDeParada = true;
                 }
@@ -556,28 +552,26 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeParada)
                     {
-                        Console.WriteLine("\nEscolha uma das opções disponiveis!!");
-                        Console.WriteLine("Pressione enter para escolher novamente!");
-                        Console.ReadKey();
-                        condicaoDeParada = true;
+                        Mensagem.OpcaoMessage();
+                        Console.ReadKey();                        
                     }
                 }
 
                 switch (opcao)
                 {
                     case 1:
-                        voo.CadastrarVoo();
+                        CadastrarVoo();
                         Console.ReadKey();
                         break;
 
 
                     case 2:
-                        voo.EditarVoo();
+                        EditarVoo();
                         Console.ReadKey();
                         break;
 
                     case 3:
-                        voo.ImprimirVoo();
+                        ImprimirVoo();
                         Console.ReadKey();
                         break;
 

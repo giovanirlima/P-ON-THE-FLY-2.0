@@ -5,13 +5,8 @@ using System.Data.SqlClient;
 namespace PON_THE_FLY_2.O.Entidades
 {
     public class BancoAeroporto
-    {
-        public string Conexao { get; set; }
-
-        public BancoAeroporto()
-        {
-        }
-        public string CaminhoDeConexao()
+    {       
+        public static string CaminhoDeConexao()
         {           
             //Console.Clear();
 
@@ -28,10 +23,10 @@ namespace PON_THE_FLY_2.O.Entidades
             //string senha = Console.ReadLine();
 
             //return Conexao = $"Data Source={ip}; Initial Catalog={database}; User Id={loguin}; Password ={senha}";
-            return Conexao = @"Data Source = localhost; Initial Catalog = AEROPORTO; User Id = sa; Password = 227126993";
+            return @"Data Source = localhost; Initial Catalog = AEROPORTO; User Id = sa; Password = 227126993";
 
         }
-        public bool LocalizarDados(string sql, SqlConnection conexao)
+        public static bool LocalizarDados(string sql, SqlConnection conexao)
         {
             BancoAeroporto caminho = new();
             conexao = new(CaminhoDeConexao());
@@ -55,7 +50,7 @@ namespace PON_THE_FLY_2.O.Entidades
             return false;
 
         }
-        public string RetornoDados(string sql, SqlConnection conexao, string paramentro)
+        public static string RetornoDados(string sql, SqlConnection conexao, string paramentro)
         {
             var situacao = "";
             BancoAeroporto caminho = new();
@@ -80,9 +75,8 @@ namespace PON_THE_FLY_2.O.Entidades
 
             return situacao;
         }
-        public int InsertDados(string sql, SqlConnection conexao)
-        {
-            int contador = 0;
+        public static bool InsertDados(string sql, SqlConnection conexao)
+        {            
             BancoAeroporto caminho = new();
             conexao = new(CaminhoDeConexao());
             conexao.Open();
@@ -90,7 +84,10 @@ namespace PON_THE_FLY_2.O.Entidades
             SqlCommand cmd = new(sql, conexao);
             try
             {
-                contador = cmd.ExecuteNonQuery();
+                if (cmd.ExecuteNonQuery() > 0)
+                {
+                    return true;
+                } 
             }
             catch (Exception e)
             {
@@ -100,11 +97,11 @@ namespace PON_THE_FLY_2.O.Entidades
             
             conexao.Close();
 
-            return contador;
+            return false;
         }
-        public void UpdateDados(string sql, SqlConnection conexao)
+        public static bool UpdateDados(string sql, SqlConnection conexao)
         {
-            int contador = 0;
+            int contador;
             BancoAeroporto caminho = new();
             conexao = new(CaminhoDeConexao());
             conexao.Open();
@@ -115,21 +112,13 @@ namespace PON_THE_FLY_2.O.Entidades
             conexao.Close();
 
             if (contador > 0)
-            {
-                Console.WriteLine("\nCadastrado com sucesso!");
-                return;
+            {                
+                return true;
             }
 
-            Console.WriteLine("\nFalha no cadastro!");
-
-
-
-
-
-
-
+            return false;
         }
-        public void DeleteDados(string sql, SqlConnection conexao)
+        public static void DeleteDados(string sql, SqlConnection conexao)
         {
             int contador;
             BancoAeroporto caminho = new();
