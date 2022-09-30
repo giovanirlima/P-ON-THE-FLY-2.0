@@ -70,11 +70,11 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (BancoAeroporto.InsertDados(sql, conexao))
             {
-                Mensagem.TrueAlteradoMessage();
+                Mensagem.TrueCadastradoMessage();
                 return;
             }
 
-            Mensagem.FalseAlteradoMessage();
+            Mensagem.FalseCadastradoMessage();
         }
         public static void EditarCompanhia()
         {            
@@ -85,6 +85,8 @@ namespace PON_THE_FLY_2.O.Entidades
             string razaoSocial, cnpj, parametro, retorno, sql;
 
             Console.Clear();
+
+            Console.WriteLine("TELA DE EDIÇÃO\n");
 
             Console.Write("Informe o número do CNPJ: ");
             cnpj = Console.ReadLine().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
@@ -243,6 +245,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 }
 
                 Console.Write("\nAté logo!");
+                return;
             }
 
             Console.WriteLine("\nSituação desta Companhia está atualmente INATIVA!\nDeseja alterar a situação desta Companhia para ATIVA?");
@@ -275,7 +278,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.Clear();
 
-            Console.WriteLine("Ola,");
+            Console.WriteLine("TELA DE IMPRESSÃO\n");
             Console.WriteLine("\nEscolha a opção desejada:\n");
             Console.WriteLine("1 - Ver todas companhias cadastradas");
             Console.WriteLine("2 - Ver uma especifica");
@@ -310,7 +313,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 conexao.Open();
 
                 cmd = new("SELECT companhiaaerea.RazaoSocial, companhiaaerea.CNPJ, companhiaaerea.DataAbertura, companhiaaerea.UltimoVoo, " +
-                "companhiaaerea.DataCadastro, companhiaaerea.Situacao FROM CompanhiaAerea;", conexao);
+                "companhiaaerea.DataCadastro, companhiaaerea.Situacao FROM CompanhiaAerea WHERE companhiaAerea.Situacao = 'ATIVA';", conexao);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -487,7 +490,7 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 Console.Clear();
 
-                Console.WriteLine("OPÇÃO: ACESSAR COMPANHIAS\n");
+                Console.WriteLine("OPÇÃO ACESSAR COMPANHIAS\n");
 
                 Console.WriteLine("1 - Cadastrar Companhia Aerea");
                 Console.WriteLine("2 - Editar Companhia Aerea");

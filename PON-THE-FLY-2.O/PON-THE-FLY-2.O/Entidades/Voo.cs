@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 
+
 namespace PON_THE_FLY_2.O.Entidades
 {
     public class Voo
@@ -9,13 +10,15 @@ namespace PON_THE_FLY_2.O.Entidades
         public static void CadastrarVoo()
         {            
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
-            string sql, inscricao, retorno, parametro;
+            string sql, inscricao, retorno, parametro, cnpj;
             int idvoo = 0, capacidade = 0;
             Destino dest = new();
             DateTime dataVoo = DateTime.Now;
             bool condicaoDeSaida;
 
             Console.Clear();
+
+            Console.WriteLine("PAINEL DE CADASTRO\n");
 
             Console.Write("Informe a inscrição da Aeronave que será responsavél pelo voo: ");
             inscricao = Console.ReadLine().ToUpper();
@@ -24,7 +27,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.WriteLine("\nAeronave não localizada!");
+                Console.Write("\nAeronave não localizada!");
                 return;
             }
 
@@ -36,19 +39,28 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (retorno == "INATIVA")
             {
-                Console.Write("\nAeronave com status INATIVA, não possivel cadastrar Voo!");
+                Console.Write("\nAeronave com status INATIVA, é não possivel cadastrar Voo!");
                 return;
             }
+
+            parametro = "CNPJ";
+
+            sql = $"SELECT CNPJ FROM CompanhiaPossueAeronave WHERE INSCRICAO = '{inscricao}';";
+
+            cnpj = BancoAeroporto.RetornoDados(sql, conexao, parametro);
 
             parametro = "IDVOO";
 
             sql = $"SELECT IDVOO FROM AeronavePossueVoo WHERE INSCRICAO = '{inscricao}'";
 
-            idvoo = Convert.ToInt32(BancoAeroporto.RetornoDados(sql, conexao, parametro));            
-
-            if (idvoo > 9999)
+            if (!string.IsNullOrWhiteSpace(BancoAeroporto.RetornoDados(sql, conexao, parametro)))
             {
-                Console.WriteLine("\nNúmero máximo de voo cadastrados");
+                idvoo = Convert.ToInt32(BancoAeroporto.RetornoDados(sql, conexao, parametro));
+            }
+                                   
+            if (idvoo >= 999)
+            {
+                Console.Write("\nNúmero máximo de voo cadastrados");
                 return;
             }
 
@@ -57,7 +69,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (!dest.ListaDestino(destino))
             {
-                Console.WriteLine("IATA informado não cadastrada!");
+                Console.Write("IATA informado não cadastrada!");
                 return;
             }
 
@@ -81,7 +93,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeSaida)
                     {
-                        Console.WriteLine("\nData do voo não pode ser para o dia nem posterior!\n");
+                        Console.WriteLine("\nData do voo não pode ser para o dia, nem posterior!\n");
                         condicaoDeSaida = true;
                     }
                 }
@@ -102,8 +114,15 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 if (BancoAeroporto.InsertDados(sql, conexao))
                 {
-                    Mensagem.TrueCadastradoMessage();
-                    return;
+                    sql = $"UPDATE CompanhiaAerea SET UltimoVoo = '{DateTime.Now.ToShortDateString()}' WHERE CNPJ = '{cnpj}'";
+
+                    if (BancoAeroporto.UpdateDados(sql, conexao))
+                    {
+                        Mensagem.TrueCadastradoMessage();
+                        return;
+                    }
+
+                    Mensagem.FalseCadastradoMessage();
                 }
             }
 
@@ -119,6 +138,8 @@ namespace PON_THE_FLY_2.O.Entidades
             int idvoo, op = 0, capacidade, ocupados;
 
             Console.Clear();
+
+            Console.WriteLine("PAINEL DE EDIÇÃO\n");
 
             Console.Write("Informe o ID do voo que deseja editar: ");
             try
@@ -141,12 +162,14 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.Clear();
 
+            Console.WriteLine("PAINEL DE EDIÇÃO\n");
+
             Console.WriteLine("Escolha a opção desejada");
             Console.WriteLine("\n1 - Editar IATA");
             Console.WriteLine("2 - Editar inscrição");
             Console.WriteLine("3 - Editar data do Voo");
             Console.WriteLine("4 - Editar Situação");
-            Console.WriteLine("9 - Voltar ao menu anterior");
+            Console.WriteLine("\n9 - Voltar ao menu anterior");
             do
             {
                 Console.Write("\nOpção: ");
@@ -206,6 +229,16 @@ namespace PON_THE_FLY_2.O.Entidades
                 if (!BancoAeroporto.LocalizarDados(sql, conexao))
                 {
                     Console.Write("\nAeronave informada não possue cadastro!");
+                    return;
+                }
+
+                parametro = "Situacao";
+
+                sql = $"SELECT Situacao FROM Aeronave WHERE INSCRICAO = '{inscricao}'";
+
+                if (BancoAeroporto.RetornoDados(sql, conexao, parametro) == "INATIVA")
+                {
+                    Console.Write("\nINSCRIÇÃO informada é de uma Aeronave INATIVA!");
                     return;
                 }
 
@@ -269,7 +302,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     {
                         if (!validacao)
                         {
-                            Console.WriteLine("\nData deve ser futura!\n");
+                            Console.WriteLine("\nData deve ser futura!");
                         }
                     }
                 } while (validacao);
@@ -373,7 +406,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             Console.Clear();
 
-            Console.WriteLine("Ola,");
+            Console.WriteLine("PAINEL DE IMPRESSÃO");
             Console.WriteLine("\nEscolha a opção desejada:\n");
             Console.WriteLine("1 - Ver todas Passagens cadastradas");
             Console.WriteLine("2 - Ver uma especifica");
@@ -409,8 +442,8 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 cmd = new("SELECT aeronavepossuevoo.INSCRICAO, aeronavepossuevoo.IDVOO, voo.Destino, voo.DataVoo, " +
                           "voo.DataCadastro, aeronavepossuevoo.AcentosOcupados, voo.Situacao FROM AeronavePossueVoo " +
-                          "JOIN Voo ON " +
-                          "voo.IDVOO = aeronavepossuevoo.IDVOO", conexao);
+                          "JOIN Voo ON voo.IDVOO = aeronavepossuevoo.IDVOO WHERE voo.Situacao = 'ATIVO'", conexao);
+                          
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -499,7 +532,7 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 Console.Clear();
 
-                Console.WriteLine("OPÇÃO: ACESSAR VOO\n");
+                Console.WriteLine("PAINEL ACESSAR VOO\n");
 
                 Console.WriteLine("1 - Cadastrar Voo");
                 Console.WriteLine("2 - Editar Voo");
@@ -554,6 +587,5 @@ namespace PON_THE_FLY_2.O.Entidades
 
             } while (opcao != 9);
         }
-
     }
 }

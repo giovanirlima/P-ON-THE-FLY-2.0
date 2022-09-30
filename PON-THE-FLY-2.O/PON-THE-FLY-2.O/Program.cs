@@ -14,7 +14,7 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 Console.Clear();
 
-                Console.WriteLine("Bem-Vindo ao Aeroporto ON THE FLY\n\n");
+                Console.WriteLine("AEROPORTO ON THE FLY\n");
 
                 Console.WriteLine("Selecione a opção desejada: ");
                 Console.WriteLine("\n1 - Companhias");

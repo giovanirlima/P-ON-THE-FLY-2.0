@@ -1,12 +1,48 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace PON_THE_FLY_2.O.Entidades
 {
     internal class Venda
     {
+        public static bool ReadCPF(string cpf)
+        {
+            int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+            string tempCpf;
+            string digito;
+            int soma;
+            int resto;
+            cpf = cpf.Trim();
+            cpf = cpf.Replace(".", "").Replace("-", "");
+            if (cpf.Length != 11)
+                return false;
+            tempCpf = cpf.Substring(0, 9);
+            soma = 0;
+
+            for (int i = 0; i < 9; i++)
+                soma += int.Parse(tempCpf[i].ToString()) * multiplicador1[i];
+            resto = soma % 11;
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+            digito = resto.ToString();
+            tempCpf = tempCpf + digito;
+            soma = 0;
+            for (int i = 0; i < 10; i++)
+                soma += int.Parse(tempCpf[i].ToString()) * multiplicador2[i];
+            resto = soma % 11;
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+            digito = digito + resto.ToString();
+            return cpf.EndsWith(digito);
+        }
         public static void CadastrarVenda()
-        {            
+        {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql, parametro, cpf, inscricao;
             double valorPassagem, resultado;
@@ -24,7 +60,7 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 Console.Write("\nCPF digitador é inválido!");
                 return;
-            }              
+            }
 
             sql = $"SELECT * FROM Passageiro WHERE CPF = '{cpf}';";
 
@@ -34,11 +70,11 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
-            sql = $"SELECT * FROM RestritosCPF WHERE '{cpf}'";
+            sql = $"SELECT * FROM RestritosCPF WHERE CPF = '{cpf}'";
 
             if (BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.WriteLine("\nPassageiro com CPF restrito, não possivel realizar a venda!");
+                Console.Write("\nPassageiro com CPF restrito, não possivel realizar a venda!");
                 return;
             }
 
@@ -60,6 +96,17 @@ namespace PON_THE_FLY_2.O.Entidades
                 Console.Write("\nPassagem não cadastrada para compra!");
                 return;
             }
+
+            parametro = "Situacao";
+
+            sql = $"SELECT Situacao FROM Passagem WHERE IDPASSAGEM = '{idpassagem}';";
+
+            if (BancoAeroporto.RetornoDados(sql, conexao, parametro) == "INATIVA")
+            {
+                Console.Write("\nPassagem INATIVA, não é possivel efetuar venda!");
+                return;
+            }
+
 
             parametro = "ValorPassagem";
 
@@ -123,6 +170,8 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
+            sql = $"UPDATE Passageiro SET UltimaCompra = '{DateTime.Now.ToShortDateString()}' WHERE = '{cpf}'";
+
             sql = $"UPDATE Venda SET DataVenda = '{DateTime.Now.ToShortDateString()}', ValorTotalVendas = '{resultado}' WHERE IDVENDA = '{idpassagem}'";
 
             BancoAeroporto.UpdateDados(sql, conexao);
@@ -152,16 +201,17 @@ namespace PON_THE_FLY_2.O.Entidades
             BancoAeroporto caminho = new();
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             SqlCommand cmd;
-            int opcao = 0, idpassagem, iditem;
+            int opcao = 0, idpassagem, iditem, idvenda;
             bool validacao;
             string sql;
 
             Console.Clear();
 
-            Console.WriteLine("Ola,");
-            Console.WriteLine("\nEscolha a opção desejada:\n");
+            Console.WriteLine("PAINEL DE IMPRESSÃO\n");
+            Console.WriteLine("Escolha a opção desejada:\n");
             Console.WriteLine("1 - Ver Passagens Vendidas");
             Console.WriteLine("2 - Ver uma especifica");
+            Console.WriteLine("3 - Ver venda Total");
             Console.WriteLine("\n9 - Voltar ao menu anterior");
             do
             {
@@ -177,7 +227,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     validacao = true;
                 }
 
-                if (opcao < 1 || opcao > 2 && opcao != 9)
+                if (opcao < 1 || opcao > 3 && opcao != 9)
                 {
                     if (!validacao)
                     {
@@ -192,9 +242,9 @@ namespace PON_THE_FLY_2.O.Entidades
                 conexao.Open();
 
                 cmd = new("SELECT aeronavepossuevoo.INSCRICAO, passagem.IDVOO, passagem.IDPASSAGEM, vendapassagem.IDITEM, " +
-                          "passagem.ValorPassagem,  passagem. Situacao FROM VendaPassagem " +
-                          "JOIN Passagem ON passagem.IDPASSAGEM = vendapassagem.IDPASSAGEM " + 
-                          "JOIN AeronavePossueVoo ON aeronavepossuevoo.IDVOO = passagem.IDVOO;", conexao);
+                          "passagem.ValorPassagem,  passagem.Situacao FROM VendaPassagem " +
+                          "JOIN Passagem ON passagem.IDPASSAGEM = vendapassagem.IDPASSAGEM " +
+                          "JOIN AeronavePossueVoo ON aeronavepossuevoo.IDVOO = passagem.IDVOO WHERE passagem.Situacao = 'ATIVA';", conexao);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -223,7 +273,56 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
+            if (opcao == 3)
+            {
+                Console.Clear();
+
+                Console.WriteLine("PAINEL DE IMPRESSÃO");
+
+                Console.Write("\nInforme qual ID da Venda que deseja localizar: ");
+                try
+                {
+                    idvenda = int.Parse(Console.ReadLine());
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("\nParametro de dado inválido!");
+                    return;
+                }
+
+                sql = $"SELECT * FROM Venda WHERE IDVENDA = '{idvenda}';";
+
+                if (!BancoAeroporto.LocalizarDados(sql, conexao))
+                {
+                    Console.WriteLine("\nVenda não cadastrado!");
+                    return;
+                }
+                             
+                conexao.Open();
+
+                cmd = new($"SELECT * FROM Venda WHERE IDVENDA = '{idvenda}'", conexao);
+
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    Console.Clear();
+
+                    while (reader.Read())
+                    {
+                        Console.WriteLine("VALOR TOTAL\n");                        
+                        Console.WriteLine($"ID VENDA: {reader.GetInt32(0)}");     
+                        Console.WriteLine($"Data Veda: {reader.GetDateTime(1).ToShortDateString()}");
+                        Console.WriteLine($"Valor Total: R$ {reader.GetDecimal(2):F2}");
+                    }
+                }
+
+                Console.Write("\nPressione enter para continuar!");
+                conexao.Close();
+                return;
+            }
             Console.Clear();
+
+            Console.WriteLine("PAINEL DE IMPRESSÃO");
 
             Console.Write("\nInforme qual ID da Passagem que deseja localizar: ");
             try
@@ -256,7 +355,7 @@ namespace PON_THE_FLY_2.O.Entidades
             }
 
             sql = $"SELECT * FROM VendaPassagem WHERE IDPASSAGEM = '{idpassagem}' AND IDITEM = '{iditem}';";
-                       
+
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nVoo não cadastrado!");
@@ -269,7 +368,7 @@ namespace PON_THE_FLY_2.O.Entidades
             cmd = new("SELECT aeronavepossuevoo.INSCRICAO, passagem.IDVOO, passagem.IDPASSAGEM, vendapassagem.IDITEM, " +
                          "passagem.ValorPassagem,  passagem. Situacao FROM VendaPassagem " +
                          "JOIN Passagem ON passagem.IDPASSAGEM = vendapassagem.IDPASSAGEM " +
-                         "JOIN AeronavePossueVoo ON aeronavepossuevoo.IDVOO = passagem.IDVOO " + 
+                         "JOIN AeronavePossueVoo ON aeronavepossuevoo.IDVOO = passagem.IDVOO " +
                         $"WHERE passagem.IDPASSAGEM = '{idpassagem}' AND vendapassagem.IDITEM = '{iditem}' ", conexao);
 
 
@@ -293,41 +392,6 @@ namespace PON_THE_FLY_2.O.Entidades
             conexao.Close();
             return;
         }
-        public static bool ReadCPF(string cpf)
-        {
-            int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-            int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-            string tempCpf;
-            string digito;
-            int soma;
-            int resto;
-            cpf = cpf.Trim();
-            cpf = cpf.Replace(".", "").Replace("-", "");
-            if (cpf.Length != 11)
-                return false;
-            tempCpf = cpf.Substring(0, 9);
-            soma = 0;
-
-            for (int i = 0; i < 9; i++)
-                soma += int.Parse(tempCpf[i].ToString()) * multiplicador1[i];
-            resto = soma % 11;
-            if (resto < 2)
-                resto = 0;
-            else
-                resto = 11 - resto;
-            digito = resto.ToString();
-            tempCpf = tempCpf + digito;
-            soma = 0;
-            for (int i = 0; i < 10; i++)
-                soma += int.Parse(tempCpf[i].ToString()) * multiplicador2[i];
-            resto = soma % 11;
-            if (resto < 2)
-                resto = 0;
-            else
-                resto = 11 - resto;
-            digito = digito + resto.ToString();
-            return cpf.EndsWith(digito);
-        }
         public static void AcessarVenda()
         {
             int opcao = 0;
@@ -337,9 +401,9 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 Console.Clear();
 
-                Console.WriteLine("OPÇÃO: ACESSAR VENDAS\n");
+                Console.WriteLine("PAINEL ACESSAR VENDAS\n");
 
-                Console.WriteLine("1 - Cadastrar Venda");                
+                Console.WriteLine("1 - Cadastrar Venda");
                 Console.WriteLine("2 - Imprimir Venda");
                 Console.WriteLine("\n9 - Voltar ao menu anterior");
                 Console.Write("\nOpção: ");
@@ -371,7 +435,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     case 1:
                         CadastrarVenda();
                         Console.ReadKey();
-                        break;                    
+                        break;
 
                     case 2:
                         ImprimirPassagem();

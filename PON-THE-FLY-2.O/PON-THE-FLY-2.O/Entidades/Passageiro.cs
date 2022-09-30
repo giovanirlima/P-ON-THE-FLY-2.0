@@ -202,6 +202,8 @@ namespace POnTheFly
             {
                 Console.Clear();
 
+                Console.WriteLine("PAINEL DE EDIÇÃO\n");
+
                 Console.WriteLine("Informe qual dado deseja alterar: ");
                 Console.WriteLine("\n1 - Nome");
                 Console.WriteLine("2 - Data de Nascimento");
@@ -392,8 +394,8 @@ namespace POnTheFly
 
             if (retorno == "ATIVO")
             {
-                Console.WriteLine("\nPassageiro está ativo!");
-                Console.WriteLine("Deseja alterar a situação do passageiro para inativo: ");
+                Console.WriteLine("\nPassageiro está ATIVO!");
+                Console.WriteLine("Deseja alterar a situação do passageiro para INATIVO: ");
                 Console.WriteLine("\n1 - Sim\n2 - Não");
                 do
                 {
@@ -441,8 +443,8 @@ namespace POnTheFly
             }
 
 
-            Console.WriteLine("\nPassageiro está inativo!");
-            Console.WriteLine("Deseja alterar a situação do passageiro para ativo: ");
+            Console.WriteLine("\nPassageiro está INATIVO!");
+            Console.WriteLine("Deseja alterar a situação do passageiro para ATIVO: ");
             Console.WriteLine("\n1 - Sim\n2 - Não");
             do
             {
@@ -532,7 +534,7 @@ namespace POnTheFly
             {
                 conexao.Open();               
 
-                cmd = new("SELECT * FROM Passageiro;", conexao);
+                cmd = new("SELECT * FROM Passageiro WHERE Situacao = 'ATIVO';", conexao);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -585,7 +587,7 @@ namespace POnTheFly
 
             conexao.Open();
 
-            cmd = new("SELECT * FROM Passageiro WHERE CPF = '{cpf}';", conexao);
+            cmd = new($"SELECT * FROM Passageiro WHERE CPF = '{cpf}';", conexao);
 
             using (SqlDataReader reader = cmd.ExecuteReader())
             {

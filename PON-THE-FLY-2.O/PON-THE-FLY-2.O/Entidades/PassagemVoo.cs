@@ -6,15 +6,16 @@ namespace PON_THE_FLY_2.O.Entidades
     internal class PassagemVoo
     {
         public static void CadastrarPassagem()
-        {
-            BancoAeroporto caminho = new();
+        {           
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
-            string sql, inscricao;
+            string sql, inscricao, parametro;
             int retorno, idvoo;
             bool validacao;
             double valor = -1;
 
             Console.Clear();
+
+            Console.WriteLine("PAINEL DE CADASTRO\n");
 
             Console.Write("Informe o ID do Voo: ");
             try
@@ -32,6 +33,16 @@ namespace PON_THE_FLY_2.O.Entidades
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.Write("\nVoo não cadastrado!");
+                return;
+            }
+
+            parametro = "Situacao";
+
+            sql = $"SELECT Situacao FROM Voo WHERE IDVOO = '{idvoo}'";
+
+            if (BancoAeroporto.RetornoDados(sql, conexao, parametro) == "INATIVO")
+            {
+                Console.Write("\nNão é possivel cadastrar Passagem, Voo está INATIVO!");
                 return;
             }
 
@@ -56,7 +67,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM AeronavePossueVoo WHERE INSCRICAO = '{inscricao}' AND IDVOO = '{idvoo}'";
 
-            if (!BancoAeroporto.LocalizarDados(sql, conexao))
+            if (BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nEste Voo está cadastrado!!");
                 return;
@@ -108,11 +119,10 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 if (BancoAeroporto.InsertDados(sql, conexao))
                 {
-                    Mensagem.TrueAlteradoMessage();
+                    Mensagem.TrueCadastradoMessage();
                     return;
                 }
             }
-
             conexao.Close();
             Mensagem.FalseCadastradoMessage();
         }
@@ -126,6 +136,8 @@ namespace PON_THE_FLY_2.O.Entidades
             double valor = -1;
 
             Console.Clear();
+
+            Console.WriteLine("PAINEL EDIÇÃO PASSAGEM\n");
 
             Console.Write("Informe o ID da passagem: ");
             try
@@ -146,10 +158,14 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
+            Console.Clear();
+
+            Console.WriteLine("PAINEL DE EDIÇÃO");
+
             Console.WriteLine("\nInforme qual dado deseja alterar: ");
             Console.WriteLine("\n1 - Valor da passagem");
             Console.WriteLine("2 - Situação da passagem");
-            Console.WriteLine("9 - Voltar ao meu anterior");
+            Console.WriteLine("\n9 - Voltar ao meu anterior");
             do
             {
                 Console.Write("\nOpção: ");
@@ -214,9 +230,18 @@ namespace PON_THE_FLY_2.O.Entidades
 
                     if (retorno1 > 0)
                     {
-                        Mensagem.TrueCadastradoMessage();
-                        return;
-                    }
+                        sql = $"UPDATE Passagem SET DataUltimaOperacao = '{DateTime.Now.ToShortDateString()}' WHERE IDPASSAGEM = '{idpassagem}'";
+                                                
+                        if (BancoAeroporto.UpdateDados(sql, conexao))
+                        {
+                            Mensagem.TrueCadastradoMessage();
+                            return;
+                        }
+
+                        Mensagem.FalseCadastradoMessage();
+                        break;
+
+                    }                       
 
                     conexao.Close();
                     Mensagem.FalseCadastradoMessage();
@@ -244,8 +269,16 @@ namespace PON_THE_FLY_2.O.Entidades
 
                             if (BancoAeroporto.UpdateDados(sql, conexao))
                             {
-                                Mensagem.TrueAlteradoMessage();
-                                return;
+                                sql = $"UPDATE Passagem SET DataUltimaOperacao = '{DateTime.Now.ToShortDateString()}' WHERE IDPASSAGEM = '{idpassagem}'";
+
+                                if (BancoAeroporto.UpdateDados(sql, conexao))
+                                {
+                                    Mensagem.TrueCadastradoMessage();
+                                    return;
+                                }
+
+                                Mensagem.FalseCadastradoMessage();
+                                break;
                             }
 
                             Mensagem.FalseAlteradoMessage();
@@ -287,8 +320,16 @@ namespace PON_THE_FLY_2.O.Entidades
 
                         if (BancoAeroporto.UpdateDados(sql, conexao))
                         {
-                            Mensagem.TrueAlteradoMessage();
-                            return;
+                            sql = $"UPDATE Passagem SET DataUltimaOperacao = '{DateTime.Now.ToShortDateString()}' WHERE IDPASSAGEM = '{idpassagem}'";
+
+                            if (BancoAeroporto.UpdateDados(sql, conexao))
+                            {
+                                Mensagem.TrueCadastradoMessage();
+                                return;
+                            }
+
+                            Mensagem.FalseCadastradoMessage();
+                            break;
                         }
 
                         Mensagem.FalseAlteradoMessage();
@@ -344,7 +385,8 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 conexao.Open();
 
-                cmd = new("SELECT passagem.IDVOO, passagem.IDPASSAGEM, passagem.ValorPassagem, passagem.DataUltimaOperacao, passagem.Situacao FROM Passagem;", conexao);
+                cmd = new("SELECT passagem.IDVOO, passagem.IDPASSAGEM, passagem.ValorPassagem, passagem.DataUltimaOperacao, " +
+                    "passagem.Situacao FROM Passagem WHERE passagem.Situacao = 'ATIVA';", conexao);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -396,7 +438,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             conexao.Open();
 
-            cmd = new("SELECT passagem.IDVOO, passagem.IDPASSAGEM, passagem.ValorPassagem, passagem.DataUltimaOperacao, passagem.Situacao FROM Passagem;", conexao);
+            cmd = new($"SELECT passagem.IDVOO, passagem.IDPASSAGEM, passagem.ValorPassagem, passagem.DataUltimaOperacao, passagem.Situacao FROM Passagem WHERE passagem.IDPASSAGEM = '{idpassagem}';", conexao);
 
 
             using (SqlDataReader reader = cmd.ExecuteReader())
@@ -428,7 +470,7 @@ namespace PON_THE_FLY_2.O.Entidades
             {
                 Console.Clear();
 
-                Console.WriteLine("OPÇÃO: ACESSAR PASSAGEM\n");
+                Console.WriteLine("PAINEL ACESSAR PASSAGEM\n");
 
                 Console.WriteLine("1 - Cadastrar Passagem");
                 Console.WriteLine("2 - Editar Passagem");

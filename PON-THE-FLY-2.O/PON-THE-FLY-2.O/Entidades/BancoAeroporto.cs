@@ -50,7 +50,7 @@ namespace PON_THE_FLY_2.O.Entidades
             return false;
 
         }
-        public static string RetornoDados(string sql, SqlConnection conexao, string paramentro)
+        public static string RetornoDados(string sql, SqlConnection conexao, string parametro)
         {
             var situacao = "";
             BancoAeroporto caminho = new();
@@ -66,7 +66,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     while (reader.Read())
                     {
-                        situacao = reader[$"{paramentro}"].ToString();
+                        situacao = reader[$"{parametro}"].ToString();
                     }
                 }
             }
