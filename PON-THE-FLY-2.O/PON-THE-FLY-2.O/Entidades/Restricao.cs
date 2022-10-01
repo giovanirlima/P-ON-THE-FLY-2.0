@@ -198,7 +198,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 conexao.Close();
                 Console.Write("Pressine enter para retornar!");
-                
+                Console.ReadKey();                
                 return;
             }
 
@@ -231,6 +231,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 conexao.Close();
                 Console.Write("Pressine enter para retornar!");
+                Console.ReadKey();
                 return;
             }
 
@@ -259,7 +260,12 @@ namespace PON_THE_FLY_2.O.Entidades
                 conexao.Close();
 
                 Console.Write("Pressine enter para retornar!");
-                
+                Console.ReadKey();
+                return;
+            }
+
+            if(opcao == 9)
+            {
                 return;
             }
 
@@ -291,7 +297,7 @@ namespace PON_THE_FLY_2.O.Entidades
             conexao.Close();
 
             Console.Write("Pressine enter para retornar!");
-            
+            Console.ReadKey();
             return;
         }
         public static void AcessarRestritos()
@@ -358,8 +364,7 @@ namespace PON_THE_FLY_2.O.Entidades
                         break;
 
                     case 5:
-                        ImprimirRestritos();
-                        Console.ReadKey();
+                        ImprimirRestritos();                        
                         break;
                 }
 

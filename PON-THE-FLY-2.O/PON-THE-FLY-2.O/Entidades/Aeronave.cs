@@ -138,7 +138,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     condicaoDeParada = true;
                 }
 
-                if (capacidade < 0)
+                if (capacidade < 0 || capacidade > 999)
                 {
                     Console.WriteLine("\nCapacidade da Aeronave, não pode ser menor que 0\n");
                     condicaoDeParada = true;
@@ -378,6 +378,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 }
 
                 Console.Write("Pressione enter para continuar!");
+                Console.ReadKey();
                 conexao.Close();
                 return;
             }
@@ -443,6 +444,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             conexao.Close();
             Console.Write("Pressione enter para continuar!");
+            Console.ReadKey();
             return;
         }
         public static void AcessarAeronave()

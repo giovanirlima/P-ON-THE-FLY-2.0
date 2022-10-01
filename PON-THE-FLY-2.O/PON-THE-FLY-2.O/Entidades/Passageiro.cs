@@ -42,7 +42,7 @@ namespace POnTheFly
             return cpf.EndsWith(digito);
         }
         public static void CadastrarPassageiro()
-        {            
+        {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             string sql, cpf, nome = "", sexo;
             bool validacao = false;
@@ -78,19 +78,16 @@ namespace POnTheFly
 
             } while (validacao);
 
-            do
+
+            Console.Write("Digite o numero do seu CPF[OBRIGATÓRIO]: ");
+            cpf = Console.ReadLine().Replace(".", string.Empty).Replace("-", string.Empty).Replace(",", string.Empty).Replace("/", string.Empty);
+            
+            if (!ReadCPF(cpf))
             {
-                Console.Write("Digite o numero do seu CPF[OBRIGATÓRIO]: ");
-                cpf = Console.ReadLine().Replace(".", string.Empty).Replace("-", string.Empty).Replace(",", string.Empty).Replace("/", string.Empty);
-                validacao = false;
+                Console.WriteLine("\nCPF inválido!\n");
+                return;
+            }
 
-                if (!ReadCPF(cpf))
-                {
-                    Console.WriteLine("\nCPF inválido!\n");
-                    validacao = true;
-                }
-
-            } while (validacao);
 
             sql = $"SELECT * FROM Passageiro WHERE CPF = '{cpf}'";
 
@@ -532,7 +529,7 @@ namespace POnTheFly
 
             if (opcao == 1)
             {
-                conexao.Open();               
+                conexao.Open();
 
                 cmd = new("SELECT * FROM Passageiro WHERE Situacao = 'ATIVO';", conexao);
 
@@ -554,12 +551,12 @@ namespace POnTheFly
 
                 Console.Write("\nPressione enter para continuar!");
                 conexao.Close();
+                Console.ReadKey();
                 return;
             }
 
             if (opcao == 9)
             {
-                Console.Write("\nAté logo!");
                 return;
             }
 
@@ -577,13 +574,13 @@ namespace POnTheFly
             }
 
             sql = $"SELECT * FROM Passageiro WHERE CPF = '{cpf}';";
-                        
+
 
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nPassageiro não cadastrado!");
                 return;
-            }            
+            }
 
             conexao.Open();
 
@@ -606,13 +603,14 @@ namespace POnTheFly
             }
 
             Console.Write("\nPressione enter para continuar!");
+            Console.ReadKey();
             conexao.Close();
             return;
         }
         public static void AcessarPassageiro()
         {
             int opcao = -1;
-            bool validacao;            
+            bool validacao;
 
             do
             {
@@ -620,7 +618,7 @@ namespace POnTheFly
 
                 Console.WriteLine("ACESSAR PASSAGEIROS\n");
 
-                Console.WriteLine("1 - Cadastrar Passageiro");                
+                Console.WriteLine("1 - Cadastrar Passageiro");
                 Console.WriteLine("2 - Editar Passageiro");
                 Console.WriteLine("3 - Imprimir Passageiro");
                 Console.WriteLine("\n9 - Voltar ao menu anterior");
@@ -634,7 +632,7 @@ namespace POnTheFly
 
                 catch (Exception)
                 {
-                    Mensagem.ParametroMessage();                   
+                    Mensagem.ParametroMessage();
                     Console.ReadKey();
                     validacao = true;
                 }
@@ -643,8 +641,8 @@ namespace POnTheFly
                 {
                     if (!validacao)
                     {
-                        Mensagem.OpcaoMessage();                        
-                        Console.ReadKey();                        
+                        Mensagem.OpcaoMessage();
+                        Console.ReadKey();
                     }
                 }
 
@@ -658,11 +656,10 @@ namespace POnTheFly
                     case 2:
                         EditarPassageiro();
                         Console.ReadKey();
-                        break;                   
+                        break;
 
                     case 3:
-                        ImprimirPassageiro();
-                        Console.ReadKey();
+                        ImprimirPassageiro();                        
                         break;
                 }
 

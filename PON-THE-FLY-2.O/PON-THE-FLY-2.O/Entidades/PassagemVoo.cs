@@ -6,10 +6,10 @@ namespace PON_THE_FLY_2.O.Entidades
     internal class PassagemVoo
     {
         public static void CadastrarPassagem()
-        {           
+        {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
-            string sql, inscricao, parametro;
-            int retorno, idvoo;
+            string sql, inscricao, parametro, idvoo, idpassagem;
+            int retorno, identificador;
             bool validacao;
             double valor = -1;
 
@@ -18,15 +18,8 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.WriteLine("PAINEL DE CADASTRO\n");
 
             Console.Write("Informe o ID do Voo: ");
-            try
-            {
-                idvoo = int.Parse(Console.ReadLine());
-            }
-            catch (Exception)
-            {
-                Mensagem.ParametroMessage();
-                return;
-            }
+
+            idvoo = Console.ReadLine().ToUpper();
 
             sql = $"SELECT * FROM Voo WHERE IDVOO = '{idvoo}'";
 
@@ -67,11 +60,25 @@ namespace PON_THE_FLY_2.O.Entidades
 
             sql = $"SELECT * FROM AeronavePossueVoo WHERE INSCRICAO = '{inscricao}' AND IDVOO = '{idvoo}'";
 
-            if (BancoAeroporto.LocalizarDados(sql, conexao))
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.WriteLine("\nEste Voo está cadastrado!!");
+                Console.WriteLine("\nEste Voo não está cadastrado!!");
                 return;
             }
+
+            parametro = "Passagem";
+
+            sql = $"SELECT Passagem FROM AeronavePossueVoo WHERE INSCRICAO = '{inscricao}' AND IDVOO = '{idvoo}'";
+
+            if (BancoAeroporto.RetornoDados(sql, conexao, parametro) == "BLOQUEADA")
+            {
+                Console.Write("\nEste Voo já possue passagem criada!");
+                return;
+            }
+
+            sql = $"UPDATE AeronavePossueVoo SET Passagem = 'BLOQUEADA' WHERE INSCRICAO = '{inscricao}' AND IDVOO = '{idvoo}'";
+
+            BancoAeroporto.UpdateDados(sql, conexao);
 
             do
             {
@@ -98,12 +105,28 @@ namespace PON_THE_FLY_2.O.Entidades
 
             } while (validacao);
 
-            sql = $"INSERT Passagem(DataUltimaOperacao, ValorPassagem, Situacao, IDVOO) VALUES(@DATAULTIMAOPERACAO, @VALORPASSAGEM, " +
+            parametro = "Identificador";
+
+            sql = $"SELECT Identificador FROM Passagem";
+
+            if (string.IsNullOrWhiteSpace(BancoAeroporto.RetornoDados(sql, conexao, parametro)))
+            {
+                identificador = 0;
+            }
+            else
+            {
+                identificador = Convert.ToInt32(BancoAeroporto.RetornoDados(sql, conexao, parametro));
+            }
+
+            idpassagem = "PA" + (identificador + 1).ToString().PadLeft(4, '0');
+
+            sql = $"INSERT Passagem(IDPASSAGEM, DataUltimaOperacao, ValorPassagem, Situacao, IDVOO) VALUES(@IDPASSAGEM, @DATAULTIMAOPERACAO, @VALORPASSAGEM, " +
                   $"@SITUACAO, @IDVOO);";
 
             conexao.Open();
             SqlCommand cmd = new(sql, conexao);
 
+            cmd.Parameters.Add(new SqlParameter("@IDPASSAGEM", idpassagem));
             cmd.Parameters.Add(new SqlParameter("@DATAULTIMAOPERACAO", DateTime.Now.ToShortDateString()));
             cmd.Parameters.Add(new SqlParameter("@VALORPASSAGEM", valor));
             cmd.Parameters.Add(new SqlParameter("@SITUACAO", "ATIVA"));
@@ -130,8 +153,8 @@ namespace PON_THE_FLY_2.O.Entidades
         {
             BancoAeroporto caminho = new();
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
-            string sql, retorno, parametro;
-            int idpassagem, opcao = 0, retorno1;
+            string sql, retorno, parametro, idpassagem;
+            int opcao = 0, retorno1;
             bool validacao;
             double valor = -1;
 
@@ -142,7 +165,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Informe o ID da passagem: ");
             try
             {
-                idpassagem = int.Parse(Console.ReadLine());
+                idpassagem = Console.ReadLine();
             }
             catch (Exception)
             {
@@ -231,7 +254,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     if (retorno1 > 0)
                     {
                         sql = $"UPDATE Passagem SET DataUltimaOperacao = '{DateTime.Now.ToShortDateString()}' WHERE IDPASSAGEM = '{idpassagem}'";
-                                                
+
                         if (BancoAeroporto.UpdateDados(sql, conexao))
                         {
                             Mensagem.TrueCadastradoMessage();
@@ -241,7 +264,7 @@ namespace PON_THE_FLY_2.O.Entidades
                         Mensagem.FalseCadastradoMessage();
                         break;
 
-                    }                       
+                    }
 
                     conexao.Close();
                     Mensagem.FalseCadastradoMessage();
@@ -345,9 +368,9 @@ namespace PON_THE_FLY_2.O.Entidades
             BancoAeroporto caminho = new();
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             SqlCommand cmd;
-            int opcao = 0, idpassagem;
+            int opcao = 0;
             bool validacao;
-            string sql;
+            string sql, idpassagem;
 
             Console.Clear();
 
@@ -392,25 +415,32 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     Console.Clear();
 
-                    while (reader.Read())
+                    if (reader.HasRows)
                     {
-                        Console.WriteLine("Passagem\n");
-                        Console.WriteLine($"IDVOO: {reader.GetInt32(0)}");
-                        Console.WriteLine($"IDPASSAGEM: {reader.GetInt32(1)}");
-                        Console.WriteLine($"ValorPassagem: {reader.GetDecimal(2).ToString("F2")}");
-                        Console.WriteLine($"Data Ultime Operação: {reader.GetDateTime(3).ToShortDateString()}");
-                        Console.WriteLine($"Situacao: {reader.GetString(4)}\n");
-                    }
-                }
+                        while (reader.Read())
+                        {
+                            Console.WriteLine("Passagem\n");
+                            Console.WriteLine($"IDVOO: {reader.GetString(0)}");
+                            Console.WriteLine($"IDPASSAGEM: {reader.GetString(1)}");
+                            Console.WriteLine($"ValorPassagem: R$ {reader.GetDecimal(2).ToString("F2")}");
+                            Console.WriteLine($"Data Ultime Operação: {reader.GetDateTime(3).ToShortDateString()}");
+                            Console.WriteLine($"Situacao: {reader.GetString(4)}\n");
+                        }
 
-                Console.Write("Pressione enter para continuar!");
-                conexao.Close();
-                return;
+                        Console.Write("Pressione enter para continuar!");
+                        Console.ReadKey();
+                        conexao.Close();
+                        return;
+                    }
+
+                    Console.Write("Não há passagens cadastradas ou ativas!");
+                    Console.ReadKey();
+                    return;
+                }                
             }
 
             if (opcao == 9)
             {
-                Console.Write("\nAté logo!");
                 return;
             }
 
@@ -420,7 +450,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Informe qual ID da Passagem que deseja localizar: ");
             try
             {
-                idpassagem = int.Parse(Console.ReadLine());
+                idpassagem = Console.ReadLine();
             }
             catch (Exception)
             {
@@ -429,7 +459,7 @@ namespace PON_THE_FLY_2.O.Entidades
             }
 
             sql = $"SELECT * FROM Passagem WHERE IDPASSAGEM = '{idpassagem}';";
-              
+
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nVoo não cadastrado!");
@@ -448,15 +478,16 @@ namespace PON_THE_FLY_2.O.Entidades
                 while (reader.Read())
                 {
                     Console.WriteLine("Passagem\n");
-                    Console.WriteLine($"IDVOO: {reader.GetInt32(0)}");
-                    Console.WriteLine($"IDPASSAGEM: {reader.GetInt32(1)}");
-                    Console.WriteLine($"ValorPassagem: {reader.GetDecimal(2).ToString("F2")}");
+                    Console.WriteLine($"IDVOO: {reader.GetString(0)}");
+                    Console.WriteLine($"IDPASSAGEM: {reader.GetString(1)}");
+                    Console.WriteLine($"ValorPassagem: R$ {reader.GetDecimal(2).ToString("F2")}");
                     Console.WriteLine($"Data Ultime Operação: {reader.GetDateTime(3).ToShortDateString()}");
                     Console.WriteLine($"Situacao: {reader.GetString(4)}\n");
                 }
             }
 
             Console.Write("Pressione enter para continuar!");
+            Console.ReadKey();
             conexao.Close();
             return;
         }
@@ -496,30 +527,27 @@ namespace PON_THE_FLY_2.O.Entidades
                     if (!condicaoDeParada)
                     {
                         Mensagem.OpcaoMessage();
-                        Console.ReadKey();
-                        condicaoDeParada = true;
+                        Console.ReadKey();                        
                     }
                 }
 
-            } while (condicaoDeParada);
+                switch (opcao)
+                {
+                    case 1:
+                        CadastrarPassagem();
+                        Console.ReadKey();
+                        break;
 
-            switch (opcao)
-            {
-                case 1:
-                    CadastrarPassagem();
-                    Console.ReadKey();
-                    break;
+                    case 2:
+                        EditarPassagem();
+                        Console.ReadKey();
+                        break;
 
-                case 2:
-                    EditarPassagem();
-                    Console.ReadKey();
-                    break;
-
-                case 3:
-                    ImprimirPassagem();
-                    Console.ReadKey();
-                    break;
-            }
+                    case 3:
+                        ImprimirPassagem();                        
+                        break;
+                }
+            } while (opcao != 9);
         }
     }
 }

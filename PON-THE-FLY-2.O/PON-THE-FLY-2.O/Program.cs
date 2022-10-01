@@ -12,6 +12,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             do
             {
+
                 Console.Clear();
 
                 Console.WriteLine("AEROPORTO ON THE FLY\n");
@@ -30,6 +31,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 try
                 {
                     opcao = int.Parse(Console.ReadLine());
+                    
                     condicaoDeParada = false;
                 }
 
@@ -38,6 +40,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     Mensagem.ParametroMessage();
                     Console.ReadKey();
                     condicaoDeParada = true;
+                    opcao = 9;
                 }
 
                 if (opcao < 0 || opcao > 7)

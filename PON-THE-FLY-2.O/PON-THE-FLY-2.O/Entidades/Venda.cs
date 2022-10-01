@@ -44,10 +44,11 @@ namespace PON_THE_FLY_2.O.Entidades
         public static void CadastrarVenda()
         {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
-            string sql, parametro, cpf, inscricao;
-            double valorPassagem, resultado;
-            int idpassagem, quantidade = 0, acentosOcupados, capacidade;
-            bool validacao = false;
+            string sql, parametro, cpf, inscricao, idpassagem, idvoo;
+            double valorPassagem, resultado, valortotalv;
+            int quantidade = 0, acentosOcupados, capacidade, idvenda;
+            DateTime idade;
+            bool validacao;
 
             Console.Clear();
 
@@ -78,10 +79,44 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
+            parametro = "Situacao";
+
+            sql = $"SELECT Situacao FROM Passageiro WHERE CPF = '{cpf}';";
+
+            if (BancoAeroporto.RetornoDados(sql, conexao, parametro) == "INATIVO")
+            {
+                Console.Write("\nPassageiro com cadastro INATIVO, não é possivel efetuar venda!");
+                return;
+            }
+
+            sql = $"SELECT Nascimento FROM Passageiro WHERE CPF = '{cpf}';";
+
+            parametro = "Nascimento";
+
+            idade = DateTime.Parse(BancoAeroporto.RetornoDados(sql, conexao, parametro));
+
+            if ((DateTime.Now.Year - idade.Year) <= 18)
+            {
+                if (DateTime.Now.Month > idade.Month)
+                {
+                    if (DateTime.Now.Day < idade.Day)
+                    {
+                        Console.Write("\nVenda negada, Passageiro menor de idade!");
+                        return;
+                    }
+                }
+            }
+
+            if (!BancoAeroporto.LocalizarDados(sql, conexao))
+            {
+                Console.Write("\nCPF do Passageiro não cadastrado!");
+                return;
+            }
+
             Console.Write("\nInforme o ID da passagem que deseja comprar: ");
             try
             {
-                idpassagem = int.Parse(Console.ReadLine());
+                idpassagem = Console.ReadLine().ToUpper();
             }
             catch (Exception)
             {
@@ -107,7 +142,6 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
-
             parametro = "ValorPassagem";
 
             sql = $"SELECT ValorPassagem FROM Passagem WHERE IDPASSAGEM = '{idpassagem}'";
@@ -121,6 +155,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 try
                 {
                     quantidade = int.Parse(Console.ReadLine());
+                    validacao = false;
                 }
                 catch (Exception)
                 {
@@ -139,9 +174,9 @@ namespace PON_THE_FLY_2.O.Entidades
 
             resultado = valorPassagem * quantidade;
 
-            parametro = "AcentosOcupados";
+            parametro = "AssentosOcupados";
 
-            sql = "SELECT AcentosOcupados FROM AeronavePossueVoo " +
+            sql = "SELECT AssentosOcupados FROM AeronavePossueVoo " +
                   "JOIN Passagem ON passagem.IDVOO = aeronavepossuevoo.IDVOO  " +
                  $"WHERE passagem.IDPASSAGEM = '{idpassagem}';";
 
@@ -164,28 +199,48 @@ namespace PON_THE_FLY_2.O.Entidades
 
             inscricao = BancoAeroporto.RetornoDados(sql, conexao, parametro);
 
-            if (acentosOcupados > capacidade)
+            if ((acentosOcupados + quantidade) > capacidade)
             {
                 Console.Write($"\nFalha na transação, possuimos um total de {capacidade - acentosOcupados} disponiveis");
                 return;
             }
 
-            sql = $"UPDATE Passageiro SET UltimaCompra = '{DateTime.Now.ToShortDateString()}' WHERE = '{cpf}'";
+            sql = $"UPDATE Passageiro SET UltimaCompra = '{DateTime.Now.ToShortDateString()}' WHERE CPF = '{cpf}';";
 
-            sql = $"UPDATE Venda SET DataVenda = '{DateTime.Now.ToShortDateString()}', ValorTotalVendas = '{resultado}' WHERE IDVENDA = '{idpassagem}'";
+            BancoAeroporto.UpdateDados(sql, conexao);
+
+            parametro = "Identificador";
+
+            sql = $"SELECT Identificador FROM Passagem WHERE IDPASSAGEM = '{idpassagem}'";
+
+            idvenda = Convert.ToInt32(BancoAeroporto.RetornoDados(sql, conexao, parametro));
+
+            parametro = "ValorTotalVendas";
+
+            sql = $"SELECT ValorTotalVendas FROM Venda WHERE IDVENDA = '{idvenda}';";
+
+            valortotalv = Convert.ToDouble(BancoAeroporto.RetornoDados(sql, conexao, parametro));
+
+            sql = $"UPDATE Venda SET DataVenda = '{DateTime.Now.ToShortDateString()}', ValorTotalVendas = '{valortotalv + resultado}' WHERE IDVENDA = '{idvenda}'";
 
             BancoAeroporto.UpdateDados(sql, conexao);
 
             for (int i = 0; i < quantidade; i++)
             {
-                sql = $"INSERT VendaPassagem(IDVENDA, IDPASSAGEM, ValorUnitarioAtual) VALUES('{idpassagem}', '{idpassagem}', {valorPassagem});";
+                sql = $"INSERT VendaPassagem(IDVENDA, IDPASSAGEM, ValorUnitarioAtual) VALUES('{idvenda}', '{idpassagem}', {valorPassagem});";
 
                 validacao = BancoAeroporto.InsertDados(sql, conexao);
             }
 
             if (validacao)
             {
-                sql = $"UPDATE AeronavePossueVoo SET AcentosOcupados = '{quantidade + acentosOcupados}' WHERE INSCRICAO = '{inscricao}';";
+                parametro = "IDVOO";
+
+                sql = $"SELECT IDVOO FROM Passagem WHERE IDPASSAGEM = '{idpassagem}';";
+
+                idvoo = BancoAeroporto.RetornoDados(sql, conexao, parametro);
+
+                sql = $"UPDATE AeronavePossueVoo SET AssentosOcupados = '{quantidade + acentosOcupados}' WHERE INSCRICAO = '{inscricao}' AND IDVOO = '{idvoo}';";
 
                 if (BancoAeroporto.UpdateDados(sql, conexao))
                 {
@@ -201,9 +256,9 @@ namespace PON_THE_FLY_2.O.Entidades
             BancoAeroporto caminho = new();
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             SqlCommand cmd;
-            int opcao = 0, idpassagem, iditem, idvenda;
+            int opcao = 0, iditem, idvenda;
             bool validacao;
-            string sql;
+            string sql, idpassagem;
 
             Console.Clear();
 
@@ -254,11 +309,11 @@ namespace PON_THE_FLY_2.O.Entidades
                     {
                         Console.WriteLine("PASSAGEM VENDIDAS\n");
                         Console.WriteLine($"INSCRICAO: {reader.GetString(0)}");
-                        Console.WriteLine($"ID PASSAGEM: {reader.GetInt32(1)}");
-                        Console.WriteLine($"ID VOO: {reader.GetInt32(2)}");
+                        Console.WriteLine($"ID PASSAGEM: {reader.GetString(1)}");
+                        Console.WriteLine($"ID VOO: {reader.GetString(2)}");
                         Console.WriteLine($"ID ITEM: {reader.GetInt32(3)}");
                         Console.WriteLine($"Valor Pago: R$ {reader.GetDecimal(4)}");
-                        Console.WriteLine($"Situação: {reader.GetString(5)}");
+                        Console.WriteLine($"Situação: {reader.GetString(5)}\n");
                     }
                 }
 
@@ -269,7 +324,6 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (opcao == 9)
             {
-                Console.Write("\nAté logo!");
                 return;
             }
 
@@ -297,7 +351,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     Console.WriteLine("\nVenda não cadastrado!");
                     return;
                 }
-                             
+
                 conexao.Open();
 
                 cmd = new($"SELECT * FROM Venda WHERE IDVENDA = '{idvenda}'", conexao);
@@ -309,9 +363,9 @@ namespace PON_THE_FLY_2.O.Entidades
 
                     while (reader.Read())
                     {
-                        Console.WriteLine("VALOR TOTAL\n");                        
-                        Console.WriteLine($"ID VENDA: {reader.GetInt32(0)}");     
-                        Console.WriteLine($"Data Veda: {reader.GetDateTime(1).ToShortDateString()}");
+                        Console.WriteLine("VALOR TOTAL\n");
+                        Console.WriteLine($"ID VENDA: {reader.GetInt32(0)}");
+                        Console.WriteLine($"Data Venda: {reader.GetDateTime(1).ToShortDateString()}");
                         Console.WriteLine($"Valor Total: R$ {reader.GetDecimal(2):F2}");
                     }
                 }
@@ -327,11 +381,11 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("\nInforme qual ID da Passagem que deseja localizar: ");
             try
             {
-                idpassagem = int.Parse(Console.ReadLine());
+                idpassagem = Console.ReadLine();
             }
             catch (Exception)
             {
-                Console.WriteLine("\nParametro de dado inválido!");
+                Mensagem.ParametroMessage();
                 return;
             }
 
@@ -358,7 +412,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.WriteLine("\nVoo não cadastrado!");
+                Console.WriteLine("\nPassagem não cadastrada ou ID inválido!");
                 return;
             }
 
@@ -380,11 +434,11 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     Console.WriteLine("PASSAGEM VENDIDAS\n");
                     Console.WriteLine($"INSCRICAO: {reader.GetString(0)}");
-                    Console.WriteLine($"ID PASSAGEM: {reader.GetInt32(1)}");
-                    Console.WriteLine($"ID VOO: {reader.GetInt32(2)}");
+                    Console.WriteLine($"ID PASSAGEM: {reader.GetString(1)}");
+                    Console.WriteLine($"ID VOO: {reader.GetString(2)}");
                     Console.WriteLine($"ID ITEM: {reader.GetInt32(3)}");
                     Console.WriteLine($"Valor Pago: R$ {reader.GetDecimal(4)}");
-                    Console.WriteLine($"Situação: {reader.GetString(5)}");
+                    Console.WriteLine($"Situação: {reader.GetString(5)}\n");
                 }
             }
 

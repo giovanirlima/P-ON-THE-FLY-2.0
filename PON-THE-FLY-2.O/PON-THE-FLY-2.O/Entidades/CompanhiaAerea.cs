@@ -6,7 +6,7 @@ namespace PON_THE_FLY_2.O.Entidades
     public class CompanhiaAerea
     {
         public static void CadastrarCompanhia()
-        {            
+        {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
 
             bool condicaoDeSaida;
@@ -20,26 +20,22 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.Write("Informe a Razão social: ");
             razaoSocial = Console.ReadLine().ToUpper();
 
-            do
+
+            Console.Write("Informe o número do CNPJ: ");
+
+            cnpj = Console.ReadLine().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
+
+            if (!ValidarCnpj(cnpj))
             {
-                Console.Write("Informe o número do CNPJ: ");
-
-                cnpj = Console.ReadLine().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
-                condicaoDeSaida = false;
-
-                if (!ValidarCnpj(cnpj))
-                {
-                    Console.WriteLine("\nCNPJ digitado é inválido!\n");
-                    condicaoDeSaida = true;
-                }
-
-            } while (condicaoDeSaida);
+                Console.Write("\nCNPJ digitado é inválido!");
+                return;
+            }
 
             sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = {cnpj}";
 
             if (BancoAeroporto.LocalizarDados(sql, conexao))
             {
-                Console.Write("\nCompanhia Aerea já cadastrada!\n");
+                Console.Write("\nCompanhia Aerea já cadastrada!");
                 return;
             }
 
@@ -77,7 +73,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Mensagem.FalseCadastradoMessage();
         }
         public static void EditarCompanhia()
-        {            
+        {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             int opcao = 0;
             bool condicaoDeSaida;
@@ -97,7 +93,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 return;
             }
 
-            sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = {cnpj}";            
+            sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = {cnpj}";
 
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
@@ -269,7 +265,7 @@ namespace PON_THE_FLY_2.O.Entidades
             Console.WriteLine("\nAté logo!");
         }
         public static void ImprimirCompanhia()
-        {            
+        {
             SqlConnection conexao = new(BancoAeroporto.CaminhoDeConexao());
             SqlCommand cmd;
             int opcao = 0;
@@ -318,23 +314,35 @@ namespace PON_THE_FLY_2.O.Entidades
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     Console.Clear();
-
-                    while (reader.Read())
+                    if (reader.HasRows)
                     {
-                        Console.WriteLine("COMPANHIA\n");
-                        Console.WriteLine($"RazaoSocial: {reader.GetString(0)}");
-                        Console.WriteLine($"CNPJ: {reader.GetString(1)}");
-                        Console.WriteLine($"Data Abertura: {reader.GetDateTime(2).ToShortDateString()}");
-                        Console.WriteLine($"Último Voo: {reader.GetDateTime(3).ToShortDateString()}");
-                        Console.WriteLine($"Data Cadastro: {reader.GetDateTime(4).ToShortDateString()}");
-                        Console.WriteLine($"Situação:{reader.GetString(5)}");
-                        Console.WriteLine();
+                        while (reader.Read())
+                        {
+                            Console.WriteLine("COMPANHIA\n");
+                            Console.WriteLine($"RazaoSocial: {reader.GetString(0)}");
+                            Console.WriteLine($"CNPJ: {reader.GetString(1)}");
+                            Console.WriteLine($"Data Abertura: {reader.GetDateTime(2).ToShortDateString()}");
+                            Console.WriteLine($"Último Voo: {reader.GetDateTime(3).ToShortDateString()}");
+                            Console.WriteLine($"Data Cadastro: {reader.GetDateTime(4).ToShortDateString()}");
+                            Console.WriteLine($"Situação:{reader.GetString(5)}");
+                            Console.WriteLine();
+                        }
+                        Console.Write("Pressione enter para continuar!");
+                        Console.ReadKey();
+                    }
+                    else
+                    {
+                        Console.Write("Não existe companhias cadastradas ou ativas!");
+                        Console.ReadKey();
                     }
                 }
-
-                Console.Write("Pressione enter para continuar!");
                 conexao.Close();
 
+                return;
+            }
+
+            if (opcao == 9)
+            {
                 return;
             }
 
@@ -344,7 +352,7 @@ namespace PON_THE_FLY_2.O.Entidades
             cnpj = Console.ReadLine().Replace(".", string.Empty).Replace("/", string.Empty).Replace("-", string.Empty).Replace("*", string.Empty);
 
             sql = $"SELECT * FROM CompanhiaAerea WHERE CNPJ = '{cnpj}'";
-              
+
             if (!BancoAeroporto.LocalizarDados(sql, conexao))
             {
                 Console.WriteLine("\nCNPJ informado não está cadastrado em nosso banco de dados!");
@@ -359,23 +367,30 @@ namespace PON_THE_FLY_2.O.Entidades
             using (SqlDataReader reader = cmd.ExecuteReader())
             {
                 Console.Clear();
-
-                while (reader.Read())
+                if (reader.HasRows)
                 {
-                    Console.WriteLine("COMPANHIA\n");
-                    Console.WriteLine($"RazaoSocial: {reader.GetString(0)}");
-                    Console.WriteLine($"CNPJ: {reader.GetString(1)}");
-                    Console.WriteLine($"Data Abertura: {reader.GetDateTime(2).ToShortDateString()}");
-                    Console.WriteLine($"Último Voo: {reader.GetDateTime(3).ToShortDateString()}");
-                    Console.WriteLine($"Data Cadastro: {reader.GetDateTime(4).ToShortDateString()}");
-                    Console.WriteLine($"Situação:{reader.GetString(5)}");
-                    Console.WriteLine();
+                    while (reader.Read())
+                    {
+                        Console.WriteLine("COMPANHIA\n");
+                        Console.WriteLine($"RazaoSocial: {reader.GetString(0)}");
+                        Console.WriteLine($"CNPJ: {reader.GetString(1)}");
+                        Console.WriteLine($"Data Abertura: {reader.GetDateTime(2).ToShortDateString()}");
+                        Console.WriteLine($"Último Voo: {reader.GetDateTime(3).ToShortDateString()}");
+                        Console.WriteLine($"Data Cadastro: {reader.GetDateTime(4).ToShortDateString()}");
+                        Console.WriteLine($"Situação:{reader.GetString(5)}");
+                        Console.WriteLine();
+                    }
+                    Console.Write("Pressione enter para continuar!");
+                    Console.ReadKey();
+                }
+                else
+                {
+                    Console.Write("Não existe companhias cadastradas ou ativas!");
+                    Console.ReadKey();
                 }
             }
 
             conexao.Close();
-
-            Console.Write("Pressione enter para continuar!");
             return;
         }
         public static bool ValidarCnpj(string cnpj)
@@ -481,7 +496,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
         }
         public static void AcessarCompanhia()
-        {            
+        {
             int opcao = 0;
             bool condicaoDeParada;
 
@@ -506,7 +521,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
                 catch (Exception)
                 {
-                    Mensagem.ParametroMessage();                    
+                    Mensagem.ParametroMessage();
                     Console.ReadKey();
                     condicaoDeParada = true;
                 }
@@ -515,8 +530,8 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeParada)
                     {
-                        Mensagem.OpcaoMessage();                        
-                        Console.ReadKey();                        
+                        Mensagem.OpcaoMessage();
+                        Console.ReadKey();
                     }
                 }
 
@@ -534,11 +549,6 @@ namespace PON_THE_FLY_2.O.Entidades
 
                     case 3:
                         ImprimirCompanhia();
-                        Console.ReadKey();
-                        break;
-
-                    case 9:
-                        Console.WriteLine("Até");
                         break;
                 }
 
