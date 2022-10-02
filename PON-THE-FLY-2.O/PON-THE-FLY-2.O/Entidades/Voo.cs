@@ -97,7 +97,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 {
                     if (!condicaoDeSaida)
                     {
-                        Console.WriteLine("\nData e hora do voo não pode ser para o dia, nem posterior!\n");
+                        Console.WriteLine("\nData e hora do voo deve ser futura!\n");
                         condicaoDeSaida = true;
                     }
                 }
@@ -302,6 +302,7 @@ namespace PON_THE_FLY_2.O.Entidades
                         if (!validacao)
                         {
                             Console.WriteLine("\nData deve ser futura!");
+                            validacao = true;
                         }
                     }
                 } while (validacao);
@@ -440,7 +441,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 conexao.Open();
 
                 cmd = new("SELECT aeronavepossuevoo.INSCRICAO, aeronavepossuevoo.IDVOO, voo.Destino, voo.DataVoo, " +
-                          "voo.HoraVoo, voo.DataCadastro, aeronavepossuevoo.AcentosOcupados, voo.Situacao FROM AeronavePossueVoo " +
+                          "voo.HoraVoo, voo.DataCadastro, aeronavepossuevoo.AssentosOcupados, voo.Situacao FROM AeronavePossueVoo " +
                           "JOIN Voo ON voo.IDVOO = aeronavepossuevoo.IDVOO WHERE voo.Situacao = 'ATIVO'", conexao);
 
 
@@ -489,7 +490,7 @@ namespace PON_THE_FLY_2.O.Entidades
             conexao.Open();
 
             cmd = new("SELECT aeronavepossuevoo.INSCRICAO, aeronavepossuevoo.IDVOO, voo.Destino, voo.DataVoo, " +
-                      "voo.HoraVoo, voo.DataCadastro, aeronavepossuevoo.AcentosOcupados, voo.Situacao FROM AeronavePossueVoo " +
+                      "voo.HoraVoo, voo.DataCadastro, aeronavepossuevoo.AssentosOcupados, voo.Situacao FROM AeronavePossueVoo " +
                       "JOIN Voo ON " +
                       $"voo.IDVOO = aeronavepossuevoo.IDVOO WHERE voo.IDVOO = '{idvoo}'", conexao);
 

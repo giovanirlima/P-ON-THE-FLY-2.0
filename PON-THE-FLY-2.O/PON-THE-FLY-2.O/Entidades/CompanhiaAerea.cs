@@ -175,6 +175,7 @@ namespace PON_THE_FLY_2.O.Entidades
                         if (!condicaoDeSaida)
                         {
                             Console.WriteLine("\nData de abertura não pode ser no futuro!\n");
+                            condicaoDeSaida = true;
                         }
                     }
 
@@ -503,6 +504,7 @@ namespace PON_THE_FLY_2.O.Entidades
 
             do
             {
+                opcao = 0;
                 Console.Clear();
 
                 Console.WriteLine("OPÇÃO ACESSAR COMPANHIAS\n");
@@ -516,7 +518,7 @@ namespace PON_THE_FLY_2.O.Entidades
                 try
                 {
                     opcao = int.Parse(Console.ReadLine());
-                    condicaoDeParada = false;
+                    condicaoDeParada = true;;
                 }
 
                 catch (Exception)
@@ -531,7 +533,7 @@ namespace PON_THE_FLY_2.O.Entidades
                     if (!condicaoDeParada)
                     {
                         Mensagem.OpcaoMessage();
-                        Console.ReadKey();
+                        Console.ReadKey();                        
                     }
                 }
 

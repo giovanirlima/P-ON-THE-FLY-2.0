@@ -97,13 +97,18 @@ namespace PON_THE_FLY_2.O.Entidades
 
             if ((DateTime.Now.Year - idade.Year) <= 18)
             {
-                if (DateTime.Now.Month > idade.Month)
+                if ((DateTime.Now.Year - idade.Year) == 18)
                 {
-                    if (DateTime.Now.Day < idade.Day)
+                    if (DateTime.Now.Month < idade.Month)
                     {
-                        Console.Write("\nVenda negada, Passageiro menor de idade!");
+                        Console.Write("\nPassageiros menor de idade não poder comprar passagens!");
                         return;
                     }
+                }
+                else
+                {
+                    Console.Write("\nPassageiros menor de idade não poder comprar passagens!");
+                    return;
                 }
             }
 

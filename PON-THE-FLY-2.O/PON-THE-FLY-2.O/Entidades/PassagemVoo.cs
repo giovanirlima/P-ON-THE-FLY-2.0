@@ -257,17 +257,17 @@ namespace PON_THE_FLY_2.O.Entidades
 
                         if (BancoAeroporto.UpdateDados(sql, conexao))
                         {
-                            Mensagem.TrueCadastradoMessage();
+                            Mensagem.TrueAlteradoMessage();
                             return;
                         }
 
-                        Mensagem.FalseCadastradoMessage();
+                        Mensagem.FalseAlteradoMessage();
                         break;
 
                     }
 
                     conexao.Close();
-                    Mensagem.FalseCadastradoMessage();
+                    Mensagem.FalseAlteradoMessage();
                     break;
 
                 case 2:
@@ -296,11 +296,11 @@ namespace PON_THE_FLY_2.O.Entidades
 
                                 if (BancoAeroporto.UpdateDados(sql, conexao))
                                 {
-                                    Mensagem.TrueCadastradoMessage();
+                                    Mensagem.TrueAlteradoMessage();
                                     return;
                                 }
 
-                                Mensagem.FalseCadastradoMessage();
+                                Mensagem.FalseAlteradoMessage();
                                 break;
                             }
 
@@ -347,11 +347,11 @@ namespace PON_THE_FLY_2.O.Entidades
 
                             if (BancoAeroporto.UpdateDados(sql, conexao))
                             {
-                                Mensagem.TrueCadastradoMessage();
+                                Mensagem.TrueAlteradoMessage();
                                 return;
                             }
 
-                            Mensagem.FalseCadastradoMessage();
+                            Mensagem.FalseAlteradoMessage();
                             break;
                         }
 
